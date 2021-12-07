@@ -1,9 +1,105 @@
 import { Listr } from 'listr2'
-import { addScriptToPackageJson, createBabelConfig, createLambdaFromTemplate, createLambdaPackageJson, createLambdaTestFromTemplate, createPackageJson, installDependencies, installLambdaDependencies } from './project-init.js'
-import { createProjectDir, initGit, writeTerraformScript } from './utils.js'
+import {
+  addLambdaToMonoFile,
+  addScriptToPackageJson,
+  createBabelConfig,
+  createLambdaFromTemplate,
+  createLambdaPackageJson,
+  createLambdaTestFromTemplate,
+  createMonoFile,
+  createPackageJson,
+  installDependencies,
+  installLambdaDependencies
+} from './project-init.js'
+import {
+  copyTemplateFiles,
+  createProjectDir,
+  initGit,
+  writeRegionTerraformScript,
+  writeTerraformScript
+} from './utils.js'
 
-export async function runTasks (options) {
-  const tasks = new Listr([
+function createLambdaTasks (options, config) {
+  let lambdaPath = `${process.cwd()}/${options.projectName}/packages/${
+    options.lambda
+  }`
+
+  let monoPath = `${process.cwd()}/${options.projectName}`
+
+  if (options.currentProjectDir) {
+    monoPath = process.cwd()
+    lambdaPath = `${process.cwd()}/packages/${options.lambda}`
+  }
+  return new Listr([
+    {
+      title: 'Creating lambda directory',
+      task: async (t, project) => {
+        if (!options.lambda) {
+          project.skip()
+        }
+
+        console.log('Creating lambda directory', lambdaPath)
+        await createProjectDir(lambdaPath)
+
+        const lambdaTasks = project.newListr([
+          {
+            title: 'Creating package.json',
+            task: async (t, lambda) => {
+              await createLambdaPackageJson(options, lambdaPath, config)
+            }
+          },
+          {
+            title: 'Creating .babelrc file',
+            task: async (t, lambda) => {
+              await createBabelConfig(lambdaPath, config)
+            }
+          },
+          {
+            title: 'Adding lambda to mono json file',
+            task: async (t, lambda) => {
+              await addLambdaToMonoFile(options, monoPath)
+            }
+          },
+          {
+            title: 'Creating src directory',
+            task: async () => {
+              await createProjectDir(`${lambdaPath}/src`)
+            }
+          },
+          {
+            title: 'Copying lambda files',
+            task: async () => {
+              await createLambdaFromTemplate(options, lambdaPath, config)
+            }
+          },
+          {
+            title: 'Creating test directory',
+            task: async () => {
+              await createProjectDir(`${lambdaPath}/test`)
+            }
+          },
+          {
+            title: 'Copying lambda test files',
+            task: async () => {
+              await createLambdaTestFromTemplate(options, lambdaPath, config)
+            }
+          },
+          {
+            title: 'Installing lambda dependencies',
+            task: async () => {
+              await installLambdaDependencies(lambdaPath)
+            }
+          }
+        ])
+
+        await lambdaTasks.run()
+      }
+    }
+  ])
+}
+
+function createProjectTasks (options, config) {
+  return new Listr([
     {
       title: 'Setting up project',
       task: (_, task) => {
@@ -15,68 +111,34 @@ export async function runTasks (options) {
                 project.skip()
               }
               await createProjectDir(`${process.cwd()}/${options.projectName}`)
-            }
-          },
-          {
-            title: 'Creating lambda directory',
-            task: async (t, project) => {
-              if (!options.lambda) {
-                project.skip()
-              }
-              await createProjectDir(
-                `${process.cwd()}/${options.projectName}/${options.lambda}`
-              )
 
-              const lambdaTasks = project.newListr([
+              const projectTasks = project.newListr([
                 {
-                  title: 'Creating package.json',
+                  title: 'Creating .gitignore file',
                   task: async (t, lambda) => {
-                    await createLambdaPackageJson(options)
+                    await copyTemplateFiles(options)
                   }
                 },
                 {
-                  title: 'Creating .babelrc file',
+                  title: 'Creating mono json file',
                   task: async (t, lambda) => {
-                    await createBabelConfig(options)
-                  }
-                },
-                {
-                  title: 'Creating src directory',
-                  task: async () => {
-                    await createProjectDir(
-                      `${process.cwd()}/${options.projectName}/${options.lambda}/src`
-                    )
-                  }
-                },
-                {
-                  title: 'Copying lambda files',
-                  task: async () => {
-                    await createLambdaFromTemplate(options)
-                  }
-                },
-                {
-                  title: 'Creating test directory',
-                  task: async () => {
-                    await createProjectDir(
-                      `${process.cwd()}/${options.projectName}/${options.lambda}/test`
-                    )
-                  }
-                },
-                {
-                  title: 'Copying lambda test files',
-                  task: async () => {
-                    await createLambdaTestFromTemplate(options)
-                  }
-                },
-                {
-                  title: 'Installing lambda dependencies',
-                  task: async () => {
-                    await installLambdaDependencies(options)
+                    await createMonoFile(options, config)
                   }
                 }
               ])
 
-              await lambdaTasks.run()
+              await projectTasks.run()
+            }
+          },
+          {
+            title: 'Creating packages directory',
+            task: async (t, project) => {
+              if (!options.projectName) {
+                project.skip()
+              }
+              await createProjectDir(
+                `${process.cwd()}/${options.projectName}/packages`
+              )
             }
           },
           {
@@ -89,11 +151,15 @@ export async function runTasks (options) {
               const terraformScriptTask = project.newListr([
                 {
                   title: 'Creating aws lambda function terraform script',
-                  task: async () => writeTerraformScript(options, 'lambda')
+                  task: async () => writeTerraformScript(options, 'lambda', config)
                 },
                 {
                   title: 'Creating aws iam role terraform script',
-                  task: async () => writeTerraformScript(options, 'iam')
+                  task: async () => writeTerraformScript(options, 'iam', config)
+                },
+                {
+                  title: 'Creating aws provider terraform script',
+                  task: async () => writeRegionTerraformScript(options, config)
                 }
               ])
 
@@ -130,6 +196,20 @@ export async function runTasks (options) {
       }
     }
   ])
+}
 
-  return tasks.run()
+export async function runTasks (options, config) {
+  const tasks = []
+
+  if (!options.currentProjectDir) {
+    tasks.push(createProjectTasks(options, config))
+  }
+
+  if (options.lambda) {
+    tasks.push(createLambdaTasks(options, config))
+  }
+
+  for (const task of tasks) {
+    await task.run()
+  }
 }

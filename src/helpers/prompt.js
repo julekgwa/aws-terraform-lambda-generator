@@ -1,6 +1,8 @@
 import inquirer from 'inquirer'
 import { isInProjectRoot, validateInput } from './utils.js'
+import path from 'path'
 
+const DIRECTORY_NAME = path.basename(path.resolve(''))
 const QUESTIONS = []
 
 const LAMBDA_OPTIONS = {
@@ -24,7 +26,13 @@ const PROJECT_OPTIONS = {
   validate: validateInput
 }
 
-export async function promptLambdaOptions (options) {
+const REGION_OPTIONS = {
+  type: 'input',
+  name: 'region',
+  message: 'What is the region of your lambda?'
+}
+
+export async function promptLambdaOptions (options, config) {
   if (!isInProjectRoot()) {
     const projectQuestions = [PROJECT_OPTIONS]
     const newProjectAnswer = await inquirer.prompt(projectQuestions)
@@ -33,7 +41,9 @@ export async function promptLambdaOptions (options) {
       newProjectAnswer.create_project &&
       newProjectAnswer.create_project.toLowerCase() === 'y'
     ) {
+      REGION_OPTIONS.default = config.aws.region
       QUESTIONS.push(NEW_PROJECT_OPTIONS)
+      QUESTIONS.push(REGION_OPTIONS)
     } else {
       console.log('You must be in a project directory to add a lambda.')
       process.exit(1)
@@ -49,6 +59,8 @@ export async function promptLambdaOptions (options) {
   return {
     ...options,
     lambda: options.lambda || answers.name,
-    projectName: options.projectName || answers.project_name
+    projectName: options.projectName || answers.project_name || DIRECTORY_NAME,
+    region: options.region || answers.region,
+    currentProjectDir: !!isInProjectRoot()
   }
 }

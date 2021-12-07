@@ -1,26 +1,26 @@
 import fs from 'fs'
-import config from 'config'
 import { execa } from 'execa'
 import arg from 'arg'
+import path from 'path'
 
 const CURR_DIR = process.cwd()
 const PACKAGE_DIRECTORY = 'packages'
 
-export async function createProjectDir (path) {
-  if (!fs.existsSync(path)) {
-    return fs.mkdirSync(path)
+export async function createProjectDir (dirPath) {
+  if (!fs.existsSync(dirPath)) {
+    return fs.mkdirSync(dirPath, { recursive: true })
   }
 }
 
-// export function writeRegionTerraformScript (region) {
-//   let tfContents = config.get('terraform.provider')
-//   tfContents = tfContents.replace(/:region/g, region)
-//   const terraformDir = `${CURR_DIR}/${TERRAFORM_SCRIPT_DIR}/providers.tf`
+export function writeRegionTerraformScript (options, config) {
+  let tfContents = config.terraform.provider
+  tfContents = tfContents.replace(/:region/g, options.region)
+  const terraformDir = `${CURR_DIR}/${options.projectName}/terraform/providers.tf`
 
-//   if (!fs.existsSync(terraformDir)) {
-//     fs.writeFileSync(terraformDir, tfContents)
-//   }
-// }
+  if (!fs.existsSync(terraformDir)) {
+    fs.writeFileSync(terraformDir, tfContents)
+  }
+}
 
 export async function initGit (options) {
   const directory = options.targetDir || process.cwd() + `/${options.projectName}`
@@ -37,8 +37,8 @@ export function camelToUnderscore (key) {
   return result.split(' ').join('_').toLowerCase()
 }
 
-export async function writeTerraformScript (options, template) {
-  let tfContents = config.get(`terraform.${template}`)
+export async function writeTerraformScript (options, template, config) {
+  let tfContents = config.terraform[template]
 
   tfContents = tfContents.replace(/:lambda_name/g, options.lambda)
   tfContents = tfContents.replace(/:package_name/g, options.lambda)
@@ -79,10 +79,19 @@ export function parseArgumentsIntoOptions (rawArgs) {
 }
 
 export function isInProjectRoot () {
-  return process.cwd().includes(PACKAGE_DIRECTORY)
+  return fs.existsSync(`${CURR_DIR}/${PACKAGE_DIRECTORY}`)
 }
 
 export function validateInput (input) {
   if (/^([A-Za-z\-_\d])+$/.test(input)) return true
   else { return 'Project name may only include letters, numbers, underscores and hashes.' }
+}
+
+export async function copyTemplateFiles (options) {
+  const currentFileUrl = import.meta.url
+  const gitIgnore = path.resolve(
+    new URL(currentFileUrl).pathname,
+    '../../../.gitignore'
+  )
+  return fs.copyFileSync(gitIgnore, process.cwd() + '/' + options.projectName + '/.gitignore')
 }

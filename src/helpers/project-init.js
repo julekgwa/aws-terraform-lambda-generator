@@ -1,4 +1,3 @@
-import config from 'config'
 import { install } from 'pkg-install'
 import fs from 'fs'
 import { execa } from 'execa'
@@ -9,9 +8,9 @@ export async function createPackageJson (options) {
   })
 }
 
-export async function createLambdaPackageJson (options) {
-  const packageJson = JSON.parse(config.get('project.lambdaPackageJson').replace(/:package_name/g, `@${options.projectName}/${options.lambda}`))
-  const directory = process.cwd() + '/' + options.projectName + '/' + options.lambda + '/' + 'package.json'
+export async function createLambdaPackageJson (options, path, config) {
+  const packageJson = JSON.parse(config.project.lambdaPackageJson.replace(/:package_name/g, `@${options.projectName}/${options.lambda}`))
+  const directory = path + '/' + 'package.json'
 
   packageJson.scripts = {
     coverage: 'jest --coverage',
@@ -39,28 +38,57 @@ export async function addScriptToPackageJson (options) {
   fs.writeFileSync(directory + '/package.json', JSON.stringify(packageJson, null, 2))
 }
 
-export async function createLambdaFromTemplate (options) {
-  const directory = process.cwd() + '/' + options.projectName + '/' + options.lambda + '/src/app.js'
-  const template = config.get('project.lambda').replace(/:lambda_name/g, options.lambda)
+export async function createLambdaFromTemplate (options, path, config) {
+  const directory = path + '/src/handlers.js'
+  const template = config.project.lambda.replace(/:lambda_name/g, options.lambda)
 
   return fs.writeFileSync(directory, template)
 }
 
-export async function createLambdaTestFromTemplate (options) {
-  const directory = process.cwd() + '/' + options.projectName + '/' + options.lambda + '/test/handler.test.js'
-  const template = config.get('project.lambdaTest').replace(/:lambda_name/g, options.lambda)
+export async function createLambdaTestFromTemplate (options, path, config) {
+  const directory = path + '/test/handlers.test.js'
+  const template = config.project.lambdaTest.replace(/:lambda_name/g, options.lambda)
 
   return fs.writeFileSync(directory, template)
 }
 
-export async function createBabelConfig (options) {
-  const directory = process.cwd() + '/' + options.projectName + '/' + options.lambda + '/' + '.babelrc'
-  const template = config.get('project.babelConfig')
+export async function createBabelConfig (path, config) {
+  const directory = path + '/' + '.babelrc'
+  const template = config.project.babelConfig
 
   return fs.writeFileSync(directory, template)
 }
 
-export async function installLambdaDependencies (options) {
+export async function createGitIgnore (options, config) {
+  if (!options.projectName) {
+    return
+  }
+  const directory = process.cwd() + '/' + options.projectName + '/' + '.gitignore'
+  const template = config.gitignore
+
+  return fs.writeFileSync(directory, template, 'utf8')
+}
+
+export async function createMonoFile (options, config) {
+  const directory = process.cwd() + '/' + options.projectName + '/' + 'mono.json'
+  const template = config.monoJson
+
+  return fs.writeFileSync(directory, template)
+}
+
+export async function addLambdaToMonoFile (options, path) {
+  const directory = path + '/mono.json'
+  const monoJson = JSON.parse(fs.readFileSync(directory))
+
+  monoJson.packages[`@${options.projectName}/${options.lambda}`] = {
+    version: '0.0.1',
+    directory: options.lambda
+  }
+
+  return fs.writeFileSync(directory, JSON.stringify(monoJson, null, 2))
+}
+
+export async function installLambdaDependencies (path) {
   return install({
     jest: '*',
     'aws-sdk': '*',
@@ -73,7 +101,7 @@ export async function installLambdaDependencies (options) {
     '@babel/register': '*',
     rimraf: '*'
   }, {
-    cwd: process.cwd() + '/' + options.projectName + '/' + options.lambda,
+    cwd: path,
     dev: true
   })
 }

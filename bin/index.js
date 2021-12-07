@@ -2,6 +2,6 @@
 
 // require = require('esm')(module /*, options*/);
 // require('../src/index.js').cli(process.argv);
-import { cli } from '../src/index.js';
+import { cli } from '../src/index.js'
 
-cli(process.argv);
+cli(process.argv)
