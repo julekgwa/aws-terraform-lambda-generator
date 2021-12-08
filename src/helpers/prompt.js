@@ -1,6 +1,7 @@
 import inquirer from 'inquirer'
-import { isInProjectRoot, validateInput } from './utils.js'
+import { getDirectories, isInProjectRoot, validateInput } from './utils.js'
 import path from 'path'
+import chalk from 'chalk'
 
 const DIRECTORY_NAME = path.basename(path.resolve(''))
 const QUESTIONS = []
@@ -33,7 +34,7 @@ const REGION_OPTIONS = {
 }
 
 export async function promptLambdaOptions (options, config) {
-  if (!isInProjectRoot()) {
+  if (!isInProjectRoot() && !options.sfn) {
     const projectQuestions = [PROJECT_OPTIONS]
     const newProjectAnswer = await inquirer.prompt(projectQuestions)
 
@@ -54,6 +55,31 @@ export async function promptLambdaOptions (options, config) {
     QUESTIONS.push(LAMBDA_OPTIONS)
   }
 
+  if (options.sfn) {
+    if (!isInProjectRoot()) {
+      console.log('%s: You must be in a project directory to create state machine', chalk.red.bold('ERROR'))
+      process.exit(1)
+    }
+
+    const sfns = await getDirectories(process.cwd() + '/packages')
+
+    const choices = []
+
+    for (const sfn of sfns) {
+      choices.push(sfn)
+      choices.push(new inquirer.Separator(' = Task = '))
+    }
+
+    if (choices.length) {
+      QUESTIONS.push({
+        type: 'checkbox',
+        name: 'sfn',
+        message: 'Which lambda do you want to add to a state machine?',
+        choices
+      })
+    }
+  }
+
   const answers = await inquirer.prompt(QUESTIONS)
 
   return {
@@ -61,6 +87,7 @@ export async function promptLambdaOptions (options, config) {
     lambda: options.lambda || answers.name,
     projectName: options.projectName || answers.project_name || DIRECTORY_NAME,
     region: options.region || answers.region,
-    currentProjectDir: !!isInProjectRoot()
+    currentProjectDir: !!isInProjectRoot(),
+    sfnList: answers.sfn || []
   }
 }

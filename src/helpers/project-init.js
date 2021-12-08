@@ -90,14 +90,22 @@ export async function addLambdaToMonoFile (options, path) {
 
 export async function installLambdaDependencies (path) {
   return install({
-    jest: '*',
     'aws-sdk': '*',
+    '@babel/runtime-corejs3': '*'
+  }, {
+    cwd: path,
+    dev: false
+  })
+}
+
+export async function installLambdaDevDependencies (path) {
+  return install({
+    jest: '*',
     '@babel/cli': '*',
     'cross-env': '*',
     '@babel/core': '*',
     '@babel/preset-env': '*',
     '@babel/plugin-transform-runtime': '*',
-    '@babel/runtime-corejs3': '*',
     '@babel/register': '*',
     rimraf: '*'
   }, {

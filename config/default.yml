@@ -66,9 +66,80 @@ project:
       "license": "ISC"
     }
 terraform:
-  iam: >
-    resource "aws_iam_role" ":lambda_name_role" {
-      name = ":lambda_name_role"
+  aws_sfn_state_machine: >
+    resource "aws_sfn_state_machine" "sfn_state_machine" {
+      name     = "sfn_state_machine"
+      role_arn = aws_iam_role.sfn_execution.arn
+
+      :definition
+    }
+  aws_iam_role_policy_attachment_sfn: >
+    resource "aws_iam_role_policy_attachment" "sfn_lambda_invoke" {
+        role       = "${aws_iam_role.sfn_execution.name}"
+        policy_arn = "${aws_iam_policy.sfn_lambda_invoke.arn}"
+    }
+  aws_iam_policy_sfn: >
+    resource "aws_iam_policy" "sfn_lambda_invoke" {
+        name = "sfn_lambda_invoke"
+        policy = "${data.aws_iam_policy_document.sfn_lambda_invoke.json}"
+    }
+  aws_iam_policy_document_sfn: >
+    data "aws_iam_policy_document" "sfn_lambda_invoke" {
+        statement {
+            actions = ["lambda:InvokeFunction"]
+            resources = ["arn:aws:lambda:*:*:*"]
+        }
+    }
+  aws_iam_policy_document: >
+    data "aws_iam_policy_document" "sfn_assume_role" {
+      statement {
+        actions = ["sts:AssumeRole"]
+
+        principals {
+          type = "Service"
+          identifiers = ["states.${var.aws_region}.amazonaws.com"]
+        }
+      }
+    }
+  aws_iam_role_policy_attachment: >
+    resource "aws_iam_role_policy_attachment" ":lambda_name_policy_logs" {
+      role       = aws_iam_role.lambda_fn_role.name
+      policy_arn = aws_iam_policy.lambda_fn_logging.arn
+    }
+  aws_iam_policy: >
+    resource "aws_iam_policy" "lambda_fn_logging" {
+      name        = "lambda_fn_logging"
+      path        = "/"
+      description = "IAM policy for logging from a lambda"
+
+      policy = jsonencode({
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Action": [
+              "logs:CreateLogGroup",
+              "logs:CreateLogStream",
+              "logs:PutLogEvents"
+            ],
+            "Resource": "arn:aws:logs:*:*:*",
+            "Effect": "Allow"
+          }
+        ]
+      })
+    }
+  aws_cloudwatch_log_group: >
+    resource "aws_cloudwatch_log_group" ":lambda_name_logs" {
+      name              = "/aws/lambda/:lambda_name"
+      retention_in_days = 0
+    }
+  aws_iam_role_sfn: >
+    resource "aws_iam_role" "sfn_execution" {
+      name = "sfn_execution"
+      assume_role_policy = "${data.aws_iam_policy_document.sfn_assume_role.json}"
+    }
+  aws_iam_role: >
+    resource "aws_iam_role" "lambda_fn_role" {
+      name = "lambda_fn_role"
 
       assume_role_policy = jsonencode({
         "Version" : "2012-10-17",
@@ -84,11 +155,11 @@ terraform:
       })
 
     }
-  lambda: >
+  aws_lambda_function: >
     resource "aws_lambda_function" ":lambda_name" {
-      filename      = ":package_name.zip"
+      filename      = "../packages/:package_name/function.zip"
       function_name = ":package_name"
-      role          = aws_iam_role.:lambda_name_role.arn
+      role          = aws_iam_role.lambda_fn_role.arn
       handler       = "dist/handlers.:package_name"
 
       source_code_hash = filebase64sha256("../packages/:package_name/function.zip")
@@ -104,11 +175,13 @@ terraform:
     }
   provider: >
     provider "aws" {
-      region     = ":region"
-      # access_key = ""
-      # secret_key = ""
+      region     = var.aws_region
     }
-
+  variables: >
+    variable "aws_region" {
+      type    = string
+      default = ":region"
+    }
 monoJson: >
   {
     "packageDir": "packages",

@@ -9,14 +9,14 @@ import {
   createMonoFile,
   createPackageJson,
   installDependencies,
-  installLambdaDependencies
+  installLambdaDependencies,
+  installLambdaDevDependencies
 } from './project-init.js'
+import { createTerraformSfn, writeTerraformScript } from './terraform.js'
 import {
   copyTemplateFiles,
   createProjectDir,
-  initGit,
-  writeRegionTerraformScript,
-  writeTerraformScript
+  initGit
 } from './utils.js'
 
 function createLambdaTasks (options, config) {
@@ -30,6 +30,7 @@ function createLambdaTasks (options, config) {
     monoPath = process.cwd()
     lambdaPath = `${process.cwd()}/packages/${options.lambda}`
   }
+
   return new Listr([
     {
       title: 'Creating lambda directory',
@@ -37,8 +38,6 @@ function createLambdaTasks (options, config) {
         if (!options.lambda) {
           project.skip()
         }
-
-        console.log('Creating lambda directory', lambdaPath)
         await createProjectDir(lambdaPath)
 
         const lambdaTasks = project.newListr([
@@ -89,11 +88,41 @@ function createLambdaTasks (options, config) {
             task: async () => {
               await installLambdaDependencies(lambdaPath)
             }
+          },
+          {
+            title: 'Installing lambda dev dependencies',
+            task: async () => {
+              await installLambdaDevDependencies(lambdaPath)
+            }
           }
         ])
 
         await lambdaTasks.run()
       }
+    },
+    {
+      title: 'Creating aws lambda function terraform script',
+      task: async () => writeTerraformScript({ ...options, path: monoPath }, 'aws_lambda_function', config)
+    },
+    {
+      title: 'Creating aws iam role terraform script',
+      task: async () => writeTerraformScript({ ...options, path: monoPath }, 'aws_iam_role', config)
+    },
+    {
+      title: 'Creating aws provider terraform script',
+      task: async () => writeTerraformScript({ ...options, path: monoPath }, 'provider', config)
+    },
+    {
+      title: 'Creating aws variables terraform script',
+      task: async () => writeTerraformScript({ ...options, path: monoPath }, 'variables', config)
+    },
+    {
+      title: 'Creating aws role policy attachment terraform script',
+      task: async () => writeTerraformScript({ ...options, path: monoPath }, 'aws_iam_role_policy_attachment', config)
+    },
+    {
+      title: 'Creating aws iam policy terraform script',
+      task: async () => writeTerraformScript({ ...options, path: monoPath }, 'aws_iam_policy', config)
     }
   ])
 }
@@ -147,23 +176,6 @@ function createProjectTasks (options, config) {
               await createProjectDir(
                 `${process.cwd()}/${options.projectName}/terraform`
               )
-
-              const terraformScriptTask = project.newListr([
-                {
-                  title: 'Creating aws lambda function terraform script',
-                  task: async () => writeTerraformScript(options, 'lambda', config)
-                },
-                {
-                  title: 'Creating aws iam role terraform script',
-                  task: async () => writeTerraformScript(options, 'iam', config)
-                },
-                {
-                  title: 'Creating aws provider terraform script',
-                  task: async () => writeRegionTerraformScript(options, config)
-                }
-              ])
-
-              terraformScriptTask.run()
             }
           },
           {
@@ -198,15 +210,53 @@ function createProjectTasks (options, config) {
   ])
 }
 
+function createStateMachineTasks (options, config) {
+  let terraformPath = `${process.cwd()}/${options.projectName}`
+
+  if (options.currentProjectDir) {
+    terraformPath = process.cwd()
+  }
+  return new Listr([
+    {
+      title: 'Creating aws sfn state machine terraform script',
+      task: async () => createTerraformSfn(options, 'aws_sfn_state_machine', config)
+    },
+    {
+      title: 'Creating aws iam policy document terraform script',
+      task: async () => writeTerraformScript({ ...options, path: terraformPath }, 'aws_iam_policy_document', config)
+    },
+    {
+      title: 'Creating aws iam policy document terraform script',
+      task: async () => writeTerraformScript({ ...options, write: true, path: terraformPath }, 'aws_iam_policy_document', config, '_sfn')
+    },
+    {
+      title: 'Creating aws iam policy document terraform script',
+      task: async () => writeTerraformScript({ ...options, write: true, path: terraformPath }, 'aws_iam_policy', config, '_sfn')
+    },
+    {
+      title: 'Creating aws iam policy document terraform script',
+      task: async () => writeTerraformScript({ ...options, write: true, path: terraformPath }, 'aws_iam_role_policy_attachment', config, '_sfn')
+    },
+    {
+      title: 'Creating aws iam policy terraform script',
+      task: async () => writeTerraformScript({ ...options, write: true, path: terraformPath }, 'aws_iam_role', config, '_sfn')
+    }
+  ])
+}
+
 export async function runTasks (options, config) {
   const tasks = []
 
-  if (!options.currentProjectDir) {
+  if (!options.currentProjectDir && !options.sfn) {
     tasks.push(createProjectTasks(options, config))
   }
 
-  if (options.lambda) {
+  if (options.lambda && !options.sfn) {
     tasks.push(createLambdaTasks(options, config))
+  }
+
+  if (options.sfn && options.sfnList.length) {
+    tasks.push(createStateMachineTasks(options, config))
   }
 
   for (const task of tasks) {
