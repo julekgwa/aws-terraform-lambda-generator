@@ -111,5 +111,5 @@ export function createStateMachineJSON (sfnList = []) {
 
 export async function findScript (scriptPath, contents) {
   const script = await fs.readFileSync(scriptPath, 'utf8')
-  return script?.trim().includes(contents?.trim())
+  return script?.trim().includes(contents?.substr(0, contents?.indexOf('{')).trim())
 }
