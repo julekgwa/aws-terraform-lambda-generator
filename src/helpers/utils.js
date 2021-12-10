@@ -41,10 +41,12 @@ export function parseArgumentsIntoOptions (rawArgs) {
         '--remove': String,
         '--dir': String,
         '--new': String,
+        '--help': Boolean,
         '-a': '--add',
         '-r': '--remove',
         '-d': '--dir',
-        '-n': '--new'
+        '-n': '--new',
+        '-h': '--help'
       },
       {
         argv: rawArgs.slice(2)
@@ -58,7 +60,8 @@ export function parseArgumentsIntoOptions (rawArgs) {
       skipPrompts: args['--add'],
       targetDir: args['--dir'],
       sfn: args['--add']?.toLowerCase() === 'sfn',
-      new: args['--new']
+      new: args['--new'],
+      help: args['--help']
     }
   } catch (error) {
     console.log(`%s: ${error.message}`, chalk.red.bold('ERROR'))

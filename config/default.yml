@@ -1,6 +1,19 @@
 aws:
   region: us-east-2
 
+help: >
+  create-aws-tf-lambda generates AWS lambda with terraform script
+
+
+  usage:
+    create-aws-tf-lambda <command>
+
+    commands can be:
+
+    -n,  --new:      used to create a new project
+    -a,  --add:      used to add a new lambda or step function
+    -h, --help:      used to print the usage guide
+
 project:
   directory: packages
   babelConfig: >

@@ -42,6 +42,11 @@ async function stateMachineQuestions (options) {
 }
 
 export async function promptLambdaOptions (options, config) {
+  if (options.help) {
+    console.log(config.help)
+    process.exit(1)
+  }
+
   if (options.new && !isInProjectRoot() && !options.sfn) {
     REGION_OPTIONS.default = config.aws.region
     QUESTIONS.push(REGION_OPTIONS)
