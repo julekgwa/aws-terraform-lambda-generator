@@ -40,9 +40,11 @@ export function parseArgumentsIntoOptions (rawArgs) {
         '--add': String,
         '--remove': String,
         '--dir': String,
+        '--new': String,
         '-a': '--add',
         '-r': '--remove',
-        '-d': '--dir'
+        '-d': '--dir',
+        '-n': '--new'
       },
       {
         argv: rawArgs.slice(2)
@@ -52,10 +54,11 @@ export function parseArgumentsIntoOptions (rawArgs) {
     return {
       lambda: args['--add'],
       remove: args['--remove'],
-      projectName: args._[0],
+      projectName: args['--new'],
       skipPrompts: args['--add'],
       targetDir: args['--dir'],
-      sfn: args['--add']?.toLowerCase() === 'sfn'
+      sfn: args['--add']?.toLowerCase() === 'sfn',
+      new: args['--new']
     }
   } catch (error) {
     console.log(`%s: ${error.message}`, chalk.red.bold('ERROR'))
@@ -104,4 +107,9 @@ export function createStateMachineJSON (sfnList = []) {
   }
 
   return stateMachineJSON
+}
+
+export async function findScript (scriptPath, contents) {
+  const script = await fs.readFileSync(scriptPath, 'utf8')
+  return script?.trim().includes(contents?.trim())
 }
