@@ -6,13 +6,14 @@ help: >
 
 
   usage:
-    create-aws-tf-lambda <command>
+    create-aws-tf-lambda [-n], [-a], [-h], [-o]
 
     commands can be:
 
-    -n,  --new:      used to create a new project
-    -a,  --add:      used to add a new lambda or step function
-    -h, --help:      used to print the usage guide
+    -n,  --new <project>:      used to create a new project
+    -a,  --add  <lambda>:      used to add a new lambda. Use -a sfn to add a step function
+    -h,           --help:      used to print the usage guide
+    -o,            --org:      used to move all your lambdas to one project [mono project]
 
 project:
   directory: packages
@@ -39,8 +40,8 @@ project:
       ]
     }
   lambda: >
-    export async function :lambda_name(event) {
-      console.log('Loading function', event);
+    export async function :lambda_name (event) {
+      console.log('Loading function', event)
     }
   lambdaTest: >
     import { :lambda_name } from '../src/handlers'

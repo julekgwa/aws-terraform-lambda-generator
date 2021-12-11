@@ -1,8 +1,6 @@
 import fs, { promises } from 'fs'
 import { execa } from 'execa'
-import arg from 'arg'
 import path from 'path'
-import chalk from 'chalk'
 
 const CURR_DIR = process.cwd()
 const PACKAGE_DIRECTORY = 'packages'
@@ -19,7 +17,8 @@ export async function createProjectDir (dirPath) {
 }
 
 export async function initGit (options) {
-  const directory = options.targetDir || process.cwd() + `/${options.projectName}`
+  const directory =
+    options.targetDir || process.cwd() + `/${options.projectName}`
   const result = await execa('git', ['init'], {
     cwd: directory
   })
@@ -29,50 +28,27 @@ export async function initGit (options) {
 }
 
 export function camelToUnderscore (key) {
+  if (!key) {
+    return
+  }
   const result = key.replace(/([A-Z])/g, ' $1')
   return result.split(' ').join('_').toLowerCase()
 }
 
-export function parseArgumentsIntoOptions (rawArgs) {
-  try {
-    const args = arg(
-      {
-        '--add': String,
-        '--remove': String,
-        '--dir': String,
-        '--new': String,
-        '--help': Boolean,
-        '-a': '--add',
-        '-r': '--remove',
-        '-d': '--dir',
-        '-n': '--new',
-        '-h': '--help'
-      },
-      {
-        argv: rawArgs.slice(2)
-      }
-    )
-
-    return {
-      lambda: args['--add'],
-      remove: args['--remove'],
-      projectName: args['--new'],
-      skipPrompts: args['--add'],
-      targetDir: args['--dir'],
-      sfn: args['--add']?.toLowerCase() === 'sfn',
-      new: args['--new'],
-      help: args['--help']
-    }
-  } catch (error) {
-    console.log(`%s: ${error.message}`, chalk.red.bold('ERROR'))
-    process.exit(1)
-  }
-}
-
-export const getDirectories = async source =>
+export const getDirectories = async (source) =>
   (await readdir(source, { withFileTypes: true }))
-    .filter(dirent => dirent.isDirectory())
-    .map(dirent => dirent.name)
+    .filter((dirent) => dirent.isDirectory())
+    .map((dirent) => dirent.name)
+
+export const getLambdaDirectories = async (source) =>
+  (await readdir(source, { withFileTypes: true }))
+    .filter(
+      (dirent) =>
+        dirent.isDirectory() &&
+        !fs.existsSync(`${source}/${dirent.name}/mono.json`) &&
+        fs.existsSync(`${source}/${dirent.name}/package.json`)
+    )
+    .map((dirent) => dirent.name)
 
 export function isInProjectRoot () {
   return fs.existsSync(`${CURR_DIR}/${PACKAGE_DIRECTORY}`)
@@ -80,7 +56,9 @@ export function isInProjectRoot () {
 
 export function validateInput (input) {
   if (/^([A-Za-z\-_\d])+$/.test(input)) return true
-  else { return 'Project name may only include letters, numbers, underscores and hashes.' }
+  else {
+    return 'Project name may only include letters, numbers, underscores and hashes.'
+  }
 }
 
 export async function copyTemplateFiles (options) {
@@ -89,7 +67,10 @@ export async function copyTemplateFiles (options) {
     new URL(currentFileUrl).pathname,
     '../../../.gitignore'
   )
-  return fs.copyFileSync(gitIgnore, process.cwd() + '/' + options.projectName + '/.gitignore')
+  return fs.copyFileSync(
+    gitIgnore,
+    process.cwd() + '/' + options.projectName + '/.gitignore'
+  )
 }
 
 export function createStateMachineJSON (sfnList = []) {
@@ -114,5 +95,84 @@ export function createStateMachineJSON (sfnList = []) {
 
 export async function findScript (scriptPath, contents) {
   const script = await fs.readFileSync(scriptPath, 'utf8')
-  return script?.trim().includes(contents?.substr(0, contents?.indexOf('{')).trim())
+  return script
+    ?.trim()
+    .includes(contents?.substr(0, contents?.indexOf('{')).trim())
+}
+
+export async function moveTerraScript (scriptPath, text, replace) {
+  let contents = fs.readFileSync(scriptPath, 'utf8')
+  contents = contents.replace(new RegExp(text, 'g'), replace)
+
+  return fs.writeFileSync(scriptPath, contents)
+}
+
+export async function createTerraformSfn (options, template, config) {
+  try {
+    const templatePath = `/terraform/${template}.tf`
+    const scriptPath = options.currentProjectDir
+      ? `${process.cwd()}${templatePath}`
+      : `${process.cwd()}/${options.projectName}${templatePath}`
+    let contents = config.terraform[template]
+
+    contents = contents.replace(
+      /:definition/g,
+      'definition = jsonencode(' +
+        JSON.stringify(createStateMachineJSON(options.sfnList), null, 2) +
+        ')'
+    )
+    if (fs.existsSync(scriptPath) && (await findScript(scriptPath, contents))) {
+      return
+    }
+    if (fs.existsSync(scriptPath)) {
+      return appendScript(scriptPath, contents)
+    }
+    return fs.writeFileSync(scriptPath, contents)
+  } catch (err) {
+    throw new Error(err.message)
+  }
+}
+
+export async function writeTerraformScript (
+  options,
+  template,
+  config,
+  templateExtension = ''
+) {
+  try {
+    const templatePath = `/terraform/${template}.tf`
+    let contents = config.terraform[`${template}${templateExtension.trim()}`]
+
+    if (!contents) {
+      return
+    }
+
+    contents = contents.replace(
+      /:lambda_name/g,
+      camelToUnderscore(options.lambda).replace('-', '_')
+    )
+    contents = contents.replace(/:package_name/g, options.lambda)
+    contents = contents.replace(/:source_directory/g, options.new ? '../packages/' : '../')
+    contents = contents.replace(/:region/g, options.region)
+
+    const scriptPath = options.path
+      ? `${options.path}${templatePath}`
+      : `${process.cwd()}/${options.projectName}${templatePath}`
+
+    if (fs.existsSync(scriptPath) && (await findScript(scriptPath, contents))) {
+      return
+    }
+
+    if (fs.existsSync(scriptPath)) {
+      return appendScript(scriptPath, contents)
+    }
+
+    return fs.writeFileSync(scriptPath, contents)
+  } catch (err) {
+    throw new Error(err.message)
+  }
+}
+
+async function appendScript (scriptPath, contents) {
+  return fs.appendFileSync(scriptPath, '\n' + contents)
 }

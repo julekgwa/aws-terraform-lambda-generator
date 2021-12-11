@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "description": "A CLI to bootstrap my new projects",
   "main": "bin/index.js",
+  "files": [
+    "dist/*",
+    "bin/*",
+    "config/*"
+  ],
   "bin": {
     "create-project": "./bin/index.js"
   },
@@ -11,7 +16,8 @@
     "access": "public"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c --environment INCLUDE_DEPS,BUILD:production"
   },
   "keywords": [
     "cli",
@@ -22,7 +28,6 @@
   "dependencies": {
     "arg": "^5.0.1",
     "chalk": "^5.0.0",
-    "esm": "^3.2.25",
     "execa": "^6.0.0",
     "inquirer": "^8.2.0",
     "js-yaml": "^4.1.0",
@@ -30,11 +35,15 @@
     "pkg-install": "^1.0.0"
   },
   "devDependencies": {
+    "@rollup/plugin-node-resolve": "^13.0.6",
     "eslint": "^7.32.0",
     "eslint-config-standard": "^16.0.3",
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.2.0",
+    "rollup": "^2.61.1",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "rollup-plugin-terser": "^7.0.2",
     "standard": "^16.0.4"
   }
 }

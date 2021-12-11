@@ -1,15 +1,23 @@
-import { install } from 'pkg-install'
+import { install, getPackageManager } from 'pkg-install'
 import fs from 'fs'
 import { execa } from 'execa'
+import { camelToUnderscore } from '../helpers/utils.js'
 
 export async function createPackageJson (options) {
-  return execa('npm', ['init', '-y'], {
+  const pkg = await getPackageManager({
+    prefer: 'yarn'
+  })
+  return execa(pkg, ['init', '-y'], {
     cwd: process.cwd() + '/' + options.projectName
   })
 }
 
 export async function createLambdaPackageJson (options, path, config) {
-  const packageJson = JSON.parse(config.project.lambdaPackageJson.replace(/:package_name/g, `@${options.projectName}/${options.lambda}`))
+  let packageName = `${camelToUnderscore(options.projectName).replace('_', '-')}/${camelToUnderscore(options.lambda).replace('_', '-')}`
+  if (!options.currentProjectDir && !options.new) {
+    packageName = camelToUnderscore(options.lambda).replace('_', '-')
+  }
+  const packageJson = JSON.parse(config.project.lambdaPackageJson.replace(/:package_name/g, packageName))
   const directory = path + '/' + 'package.json'
 
   packageJson.scripts = {
@@ -25,6 +33,7 @@ export async function createLambdaPackageJson (options, path, config) {
 export async function addScriptToPackageJson (options) {
   const directory = process.cwd() + '/' + options.projectName
   const packageJson = JSON.parse(fs.readFileSync(directory + '/package.json'))
+  packageJson.name = camelToUnderscore(packageJson.name).replace('_', '-')
   packageJson.scripts = {
     test: "mono exec 'npm run test'",
     build: "mono exec 'npm run build'",
@@ -78,14 +87,23 @@ export async function createMonoFile (options, config) {
 
 export async function addLambdaToMonoFile (options, path) {
   const directory = path + '/mono.json'
+  const packageName = camelToUnderscore(options.projectName).replace('_', '-')
+  const lambda = camelToUnderscore(options.lambda).replace('_', '-')
   const monoJson = JSON.parse(fs.readFileSync(directory))
 
-  monoJson.packages[`@${options.projectName}/${options.lambda}`] = {
+  monoJson.packages[`@${packageName}/${lambda}`] = {
     version: '0.0.1',
     directory: options.lambda
   }
 
   return fs.writeFileSync(directory, JSON.stringify(monoJson, null, 2))
+}
+
+export async function modifyPackageFile (packagePath, projectName, lambda) {
+  const json = JSON.parse(fs.readFileSync(`${packagePath}/${lambda}/package.json`))
+  json.name = `@${camelToUnderscore(projectName).replace('_', '-')}/${json.name}`
+
+  return fs.writeFileSync(packagePath + '/package.json', JSON.stringify(json, null, 2))
 }
 
 export async function installLambdaDependencies (path) {
@@ -110,7 +128,8 @@ export async function installLambdaDevDependencies (path) {
     rimraf: '*'
   }, {
     cwd: path,
-    dev: true
+    dev: true,
+    prefer: 'yarn'
   })
 }
 
@@ -118,6 +137,7 @@ export async function installDependencies (options) {
   return install({
     monomono: '*'
   }, {
-    cwd: process.cwd() + '/' + options.projectName
+    cwd: process.cwd() + '/' + options.projectName,
+    prefer: 'yarn'
   })
 }
