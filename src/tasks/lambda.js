@@ -15,7 +15,7 @@ import { initializeProjectTasks } from './project.js'
 
 const createTerraformScripts = async (options, config, path, task) => {
   await createProjectDir(path + '/terraform')
-  const resources = ['aws_lambda_function', 'aws_iam_role', 'provider', 'variables', 'aws_iam_role_policy_attachment', 'aws_iam_policy']
+  const resources = ['aws_lambda_function', 'aws_s3_bucket', 'aws_s3_bucket_object', 'aws_iam_role', 'provider', 'variables', 'aws_iam_role_policy_attachment', 'aws_iam_policy']
   return task.newListr([
     {
       title: 'Copying lambda files',
