@@ -6,7 +6,7 @@ help: >
 
 
   usage:
-    create-aws-tf-lambda [-n], [-a], [-h], [-o]
+    create-aws-tf-lambda [-n <project>], [-a <lambda>], [-h], [-o]
 
     commands can be:
 
@@ -207,10 +207,10 @@ terraform:
       region     = var.aws_region
     }
   variables: >
-    #variable "bucket" {
+    # variable "bucket" {
     #  type = string
-    #  default = "lambda-fn-upload" # should be unique
-    #}
+    #  default = "lambda-fns-:bucket_name" # should be unique
+    # }
 
     variable "aws_region" {
       type    = string

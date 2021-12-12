@@ -1,6 +1,7 @@
 import fs, { promises } from 'fs'
 import { execa } from 'execa'
 import path from 'path'
+import { uniqueNamesGenerator, adjectives, colors } from 'unique-names-generator'
 
 const CURR_DIR = process.cwd()
 const PACKAGE_DIRECTORY = 'packages'
@@ -133,6 +134,31 @@ export async function createTerraformSfn (options, template, config) {
   }
 }
 
+export const createBucketName = () => {
+  const improvedAdjectives = [
+    ...adjectives,
+    'abrasive',
+    'brash',
+    'callous',
+    'daft',
+    'eccentric'
+  ]
+  const xMen = [
+    'professorX',
+    'beast',
+    'colossus',
+    'cyclops',
+    'iceman',
+    'wolverine'
+  ]
+
+  return uniqueNamesGenerator({
+    dictionaries: [improvedAdjectives, colors, xMen],
+    length: 2,
+    separator: '-'
+  })
+}
+
 export async function writeTerraformScript (
   options,
   template,
@@ -152,6 +178,7 @@ export async function writeTerraformScript (
       camelToUnderscore(options.lambda).replace('-', '_')
     )
     contents = contents.replace(/:package_name/g, options.lambda)
+    contents = contents.replace(/:bucket_name/g, createBucketName())
     contents = contents.replace(/:source_directory/g, options.new ? '../packages/' : '../')
     contents = contents.replace(/:region/g, options.region)
 
@@ -167,12 +194,12 @@ export async function writeTerraformScript (
       return appendScript(scriptPath, contents)
     }
 
-    return fs.writeFileSync(scriptPath, contents)
+    return fs.writeFileSync(scriptPath, contents, 'utf8')
   } catch (err) {
     throw new Error(err.message)
   }
 }
 
 async function appendScript (scriptPath, contents) {
-  return fs.appendFileSync(scriptPath, '\n' + contents)
+  return fs.appendFileSync(scriptPath, '\n' + contents, 'utf8')
 }

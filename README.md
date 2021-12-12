@@ -1,6 +1,3 @@
-AWS lambda + Terraform generator
-
-
 ![toggle](images/aws-tf.png)
 
 ## Installation

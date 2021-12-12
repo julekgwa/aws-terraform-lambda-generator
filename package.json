@@ -32,7 +32,8 @@
     "inquirer": "^8.2.0",
     "js-yaml": "^4.1.0",
     "listr2": "^3.13.5",
-    "pkg-install": "^1.0.0"
+    "pkg-install": "^1.0.0",
+    "unique-names-generator": "^4.6.0"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^13.0.6",
