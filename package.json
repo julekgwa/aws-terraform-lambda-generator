@@ -1,12 +1,13 @@
 {
   "name": "create-aws-tf-lambda",
   "version": "1.0.0",
-  "description": "A CLI to bootstrap my new projects",
+  "description": "Generate AWS lambda with Terraform script",
   "main": "bin/index.js",
   "files": [
     "dist/*",
     "bin/*",
-    "config/*"
+    "config/*",
+    "images/*"
   ],
   "bin": {
     "create-aws-tf-lambda": "./bin/index.js"
