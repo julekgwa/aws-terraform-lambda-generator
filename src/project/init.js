@@ -7,6 +7,7 @@ export async function createPackageJson (options) {
   const pkg = await getPackageManager({
     prefer: 'npm'
   })
+
   return execa(pkg, ['init', '-y'], {
     cwd: `${process.cwd()}/${options.projectName}`
   })
@@ -17,6 +18,7 @@ export async function createLambdaPackageJson (options, path, config) {
     '_',
     '-'
   )}/${camelToUnderscore(options.lambda).replace('_', '-')}`
+
   if (!options.currentProjectDir && !options.new) {
     packageName = camelToUnderscore(options.lambda).replace('_', '-')
   }
@@ -39,6 +41,7 @@ export async function createLambdaPackageJson (options, path, config) {
 export async function addScriptToPackageJson (options) {
   const directory = `${process.cwd()}/${options.projectName}`
   const packageJson = JSON.parse(await fs.promises.readFile(`${directory}/package.json`))
+
   packageJson.name = camelToUnderscore(packageJson.name).replace('_', '-')
   packageJson.scripts = {
     test: "mono exec 'npm run test'",
@@ -78,7 +81,7 @@ export async function createLambdaTestFromTemplate (options, path, config) {
 }
 
 export async function createBabelConfig (path, config) {
-  const directory = `${path}.babelrc`
+  const directory = `${path}/.babelrc`
   const template = config.project.babelConfig
 
   return fs.promises.writeFile(directory, template)
@@ -121,6 +124,7 @@ export async function modifyPackageFile (packagePath, projectName, lambda) {
   const json = JSON.parse(
     await fs.promises.readFile(`${packagePath}/${lambda}/package.json`)
   )
+
   json.name = `@${camelToUnderscore(projectName).replace('_', '-')}/${
     json.name
   }`

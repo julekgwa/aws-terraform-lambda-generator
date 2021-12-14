@@ -1,5 +1,5 @@
 {
-  "name": "create-project",
+  "name": "create-aws-tf-lambda",
   "version": "1.0.0",
   "description": "A CLI to bootstrap my new projects",
   "main": "bin/index.js",
@@ -9,21 +9,24 @@
     "config/*"
   ],
   "bin": {
-    "create-project": "./bin/index.js"
+    "create-aws-tf-lambda": "./bin/index.js"
   },
   "type": "module",
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"Error: no test specified\" && exit 0",
     "build": "rollup -c --environment INCLUDE_DEPS,BUILD:production",
     "lint": "eslint src",
     "fix": "eslint --fix src"
   },
   "keywords": [
     "cli",
-    "create-project"
+    "create-aws-tf-lambda",
+    "aws-lambda",
+    "aws-terraform",
+    "nodejs-lambda"
   ],
   "author": "Junius Lekgwara <phutigravel@gmail.com> (http://juniusl.dev)",
   "license": "MIT",
@@ -44,6 +47,7 @@
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.2.0",
+    "jest": "^27.4.5",
     "rollup": "^2.61.1",
     "rollup-plugin-peer-deps-external": "^2.2.4",
     "rollup-plugin-terser": "^7.0.2",

@@ -84,8 +84,8 @@ terraform:
     # resource "aws_s3_bucket_object" ":lambda_name_file_upload" {
     #   bucket  = aws_s3_bucket.lambda_fn_upload.id
     #   key     = "lambda-fns/:package_name/function.zip"
-    #   source  = "../:package_name/function.zip"
-    #   etag    = filemd5("../:package_name/function.zip")
+    #   source  = ":source_directory:package_name/function.zip"
+    #   etag    = filemd5(":source_directory:package_name/function.zip")
     # }
   aws_s3_bucket: |
     # resource "aws_s3_bucket" "lambda_fn_upload" {
@@ -184,7 +184,7 @@ terraform:
   aws_lambda_function: |
     resource "aws_lambda_function" ":lambda_name" {
       # For files larger than 10 MB, consider uploading using Amazon S3.
-      # uncomment the lines in aws_s3_bucket
+      # uncomment the lines in aws_s3_bucket*.tf
       # s3_bucket         = aws_s3_bucket.lambda_fn_upload.id
       # s3_key            = "lambda-fns/:package_name/function.zip"
       filename      = ":source_directory:package_name/function.zip"

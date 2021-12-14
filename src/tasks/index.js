@@ -20,6 +20,7 @@ export async function runTasks (options, config) {
 
   if (options.org) {
     const lambdas = await getLambdaDirectories(process.cwd())
+
     tasks.push(moveLambdasIntoOneProject(lambdas, options, config))
   }
 

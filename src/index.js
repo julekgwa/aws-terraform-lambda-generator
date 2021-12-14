@@ -9,6 +9,7 @@ import { runTasks } from './tasks/index.js'
 
 export async function cli (args) {
   let options
+
   try {
     const config = yaml.load(
       await fs.promises.readFile(new URL('../config/default.yml', import.meta.url), {

@@ -16,6 +16,7 @@ import { initializeProjectTasks } from './project.js'
 const createTerraformScripts = async (options, config, path, task) => {
   await createProjectDir(`${path}/terraform`)
   const resources = ['aws_lambda_function', 'aws_s3_bucket', 'aws_s3_bucket_object', 'aws_iam_role', 'provider', 'variables', 'aws_iam_role_policy_attachment', 'aws_iam_policy']
+
   return task.newListr([
     {
       title: 'Copying lambda files',
@@ -104,6 +105,7 @@ export const createLambdaTasks = (options, config) => {
             title: 'Creating terraform directory and scripts',
             task: async (t, terraformTask) => {
               const task = await createTerraformScripts(options, config, terraformPath, terraformTask)
+
               await task.run()
             }
           },
@@ -163,7 +165,8 @@ export const moveLambdasIntoOneProject = (lambdas, options, config) => {
             throw new Error('Failed to move lambda')
           }
 
-          await moveTerraScript(`${process.cwd()}/${options.projectName}/terraform/aws_lambda_function.tf`, `../${lambda}`, `../packages/${lambda}`)
+          await moveTerraScript(`${process.cwd()}/${options.projectName}/terraform/aws_lambda_function.tf`, `../${lambda}`, '../packages/')
+          await moveTerraScript(`${process.cwd()}/${options.projectName}/terraform/aws_s3_bucket_object.tf`, `../${lambda}`, '../packages/')
           await addLambdaToMonoFile({ ...options, lambda }, `${process.cwd()}/${options.projectName}`)
           await modifyPackageFile(`${process.cwd()}/${options.projectName}/packages`, options.projectName, lambda)
         }

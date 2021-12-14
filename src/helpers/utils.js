@@ -23,6 +23,7 @@ export async function initGit (options) {
   const result = await execa('git', ['init'], {
     cwd: directory
   })
+
   if (result.failed) {
     return Promise.reject(new Error('Failed to initialize git'))
   }
@@ -33,6 +34,7 @@ export function camelToUnderscore (key) {
     return
   }
   const result = key.replace(/([A-Z])/g, ' $1')
+
   return result.split(' ').join('_').toLowerCase()
 }
 
@@ -67,6 +69,7 @@ export async function copyTemplateFiles (options) {
     new URL(currentFileUrl).pathname,
     '../../../.gitignore'
   )
+
   return fs.copyFileSync(
     gitIgnore,
     `${process.cwd()}/${options.projectName}/.gitignore`
@@ -86,6 +89,7 @@ export function createStateMachineJSON (sfnList = []) {
       Resource: `\${aws_lambda_function.${camelToUnderscore(sfnName)}.arn}`
     }
     const next = i + 1 < sfnList.length ? 'Next' : 'End'
+
     task[next] = next === 'Next' ? ucFirst(sfnList[i + 1]) : true
     stateMachineJSON.States[ucFirst(sfnName)] = task
   }
@@ -95,14 +99,16 @@ export function createStateMachineJSON (sfnList = []) {
 
 export async function findScript (scriptPath, contents) {
   const script = await fs.promises.readFile(scriptPath, 'utf8')
+
   return script
     ?.trim()
     .includes(contents?.substr(0, contents?.indexOf('{')).trim())
 }
 
-export async function moveTerraScript (scriptPath, text, replace) {
-  let contents = fs.promises.readFile(scriptPath, 'utf8')
-  contents = contents.replace(new RegExp(text, 'g'), replace)
+export async function moveTerraScript (scriptPath, find, replace) {
+  let contents = await fs.promises.readFile(scriptPath, 'utf8')
+
+  contents = contents.replace(/\.{2}\/{1}/g, replace)
 
   return fs.promises.writeFile(scriptPath, contents)
 }
@@ -178,7 +184,7 @@ export async function writeTerraformScript (
     )
     contents = contents.replace(/:package_name/g, options.lambda)
     contents = contents.replace(/:bucket_name/g, createBucketName())
-    contents = contents.replace(/:source_directory/g, options.new ? '../packages/' : '../')
+    contents = contents.replace(/:source_directory/g, options.new || options.currentProjectDir ? '../packages/' : '../')
     contents = contents.replace(/:region/g, options.region)
 
     const scriptPath = options.path
