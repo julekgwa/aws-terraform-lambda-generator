@@ -17,7 +17,7 @@ export async function promptLambdaOptions (options, config) {
   switch (true) {
     case options.help:
       console.log(config.help)
-      process.exit(1)
+      break
     case options.new && !isInProjectRoot() && !options.sfn:
       answers = await newProjectQuestions(config)
       break
@@ -33,11 +33,11 @@ export async function promptLambdaOptions (options, config) {
 
   return {
     ...options,
-    lambda: options.lambda || answers.name,
-    projectName: options.projectName || answers.project || DIRECTORY_NAME,
-    region: options.region || answers.region || config.aws.region,
+    lambda: options.lambda || answers?.name,
+    projectName: options.projectName || answers?.project || DIRECTORY_NAME,
+    region: options.region || answers?.region || config.aws.region,
     currentProjectDir: !!isInProjectRoot(),
-    sfnList: answers.sfn || []
+    sfnList: answers?.sfn || []
   }
 }
 
@@ -78,6 +78,5 @@ export function parseArgumentsIntoOptions (rawArgs) {
     }
   } catch (error) {
     console.log(`%s: ${error.message}`, chalk.red.bold('ERROR'))
-    process.exit(1)
   }
 }

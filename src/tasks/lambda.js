@@ -14,7 +14,7 @@ import {
 import { initializeProjectTasks } from './project.js'
 
 const createTerraformScripts = async (options, config, path, task) => {
-  await createProjectDir(path + '/terraform')
+  await createProjectDir(`${path}/terraform`)
   const resources = ['aws_lambda_function', 'aws_s3_bucket', 'aws_s3_bucket_object', 'aws_iam_role', 'provider', 'variables', 'aws_iam_role_policy_attachment', 'aws_iam_policy']
   return task.newListr([
     {
@@ -49,7 +49,7 @@ export const createLambdaTasks = (options, config) => {
   return new Listr([
     {
       title: 'Creating lambda directory',
-      task: async (t, project) => {
+      task: async (p, project) => {
         if (!options.lambda) {
           project.skip()
         }
@@ -58,13 +58,13 @@ export const createLambdaTasks = (options, config) => {
         const lambdaTasks = project.newListr([
           {
             title: 'Creating package.json',
-            task: async (t, lambda) => {
+            task: async () => {
               await createLambdaPackageJson(options, lambdaPath, config)
             }
           },
           {
             title: 'Creating .babelrc file',
-            task: async (t, lambda) => {
+            task: async () => {
               await createBabelConfig(lambdaPath, config)
             }
           },
@@ -75,7 +75,7 @@ export const createLambdaTasks = (options, config) => {
                 return 'Not in a mono project'
               }
             },
-            task: async (t, lambda) => {
+            task: async () => {
               await addLambdaToMonoFile(options, monoPath)
             }
           },

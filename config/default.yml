@@ -80,43 +80,43 @@ project:
       "license": "ISC"
     }
 terraform:
-  aws_s3_bucket_object: >
-    #resource "aws_s3_bucket_object" ":lambda_name_file_upload" {
-    #  bucket = aws_s3_bucket.lambda_fn_upload.id
-    #  key    = "lambda-fns/:package_name/function.zip"
-    #  source = "../:package_name/function.zip"
-    #  etag = filemd5("../:package_name/function.zip")
-    #}
-  aws_s3_bucket: >
-    #resource "aws_s3_bucket" "lambda_fn_upload" {
-    #    bucket = var.bucket
-    #    acl = "private"
-    #}
-  aws_sfn_state_machine: >
+  aws_s3_bucket_object: |
+    # resource "aws_s3_bucket_object" ":lambda_name_file_upload" {
+    #   bucket  = aws_s3_bucket.lambda_fn_upload.id
+    #   key     = "lambda-fns/:package_name/function.zip"
+    #   source  = "../:package_name/function.zip"
+    #   etag    = filemd5("../:package_name/function.zip")
+    # }
+  aws_s3_bucket: |
+    # resource "aws_s3_bucket" "lambda_fn_upload" {
+    #   bucket = var.bucket
+    #   acl    = "private"
+    # }
+  aws_sfn_state_machine: |
     resource "aws_sfn_state_machine" "sfn_state_machine" {
       name     = "sfn_state_machine"
       role_arn = aws_iam_role.sfn_execution.arn
 
       :definition
     }
-  aws_iam_role_policy_attachment_sfn: >
+  aws_iam_role_policy_attachment_sfn: |
     resource "aws_iam_role_policy_attachment" "sfn_lambda_invoke" {
         role       = "${aws_iam_role.sfn_execution.name}"
         policy_arn = "${aws_iam_policy.sfn_lambda_invoke.arn}"
     }
-  aws_iam_policy_sfn: >
+  aws_iam_policy_sfn: |
     resource "aws_iam_policy" "sfn_lambda_invoke" {
         name = "sfn_lambda_invoke"
         policy = "${data.aws_iam_policy_document.sfn_lambda_invoke.json}"
     }
-  aws_iam_policy_document_sfn: >
+  aws_iam_policy_document_sfn: |
     data "aws_iam_policy_document" "sfn_lambda_invoke" {
         statement {
             actions = ["lambda:InvokeFunction"]
             resources = ["arn:aws:lambda:*:*:*"]
         }
     }
-  aws_iam_policy_document: >
+  aws_iam_policy_document: |
     data "aws_iam_policy_document" "sfn_assume_role" {
       statement {
         actions = ["sts:AssumeRole"]
@@ -127,12 +127,12 @@ terraform:
         }
       }
     }
-  aws_iam_role_policy_attachment: >
+  aws_iam_role_policy_attachment: |
     resource "aws_iam_role_policy_attachment" "lambda_fn_policy_logs" {
       role       = aws_iam_role.lambda_fn_role.name
       policy_arn = aws_iam_policy.lambda_fn_logging.arn
     }
-  aws_iam_policy: >
+  aws_iam_policy: |
     resource "aws_iam_policy" "lambda_fn_logging" {
       name        = "lambda_fn_logging"
       path        = "/"
@@ -153,7 +153,7 @@ terraform:
         ]
       })
     }
-  aws_cloudwatch_log_group: >
+  aws_cloudwatch_log_group: |
     resource "aws_cloudwatch_log_group" ":lambda_name_logs" {
       name              = "/aws/lambda/:lambda_name"
       retention_in_days = 0
@@ -163,7 +163,7 @@ terraform:
       name = "sfn_execution"
       assume_role_policy = "${data.aws_iam_policy_document.sfn_assume_role.json}"
     }
-  aws_iam_role: >
+  aws_iam_role: |
     resource "aws_iam_role" "lambda_fn_role" {
       name = "lambda_fn_role"
 
@@ -181,10 +181,11 @@ terraform:
       })
 
     }
-  aws_lambda_function: >
+  aws_lambda_function: |
     resource "aws_lambda_function" ":lambda_name" {
       # For files larger than 10 MB, consider uploading using Amazon S3.
-      # s3_bucket         = "aws_s3_bucket.lambda_fn_upload.id
+      # uncomment the lines in aws_s3_bucket
+      # s3_bucket         = aws_s3_bucket.lambda_fn_upload.id
       # s3_key            = "lambda-fns/:package_name/function.zip"
       filename      = ":source_directory:package_name/function.zip"
       function_name = ":package_name"
@@ -193,23 +194,27 @@ terraform:
 
       source_code_hash = filebase64sha256(":source_directory:package_name/function.zip")
 
+      #depends_on = [
+      #  aws_s3_bucket_object.lab_file_upload
+      #]
+
       runtime = "nodejs12.x"
     }
-  archive: >
+  archive: |
     data "archive_file" ":lambda_name" {
       type = "zip"
 
       source_dir  = "${path.module}/:package_name"
       output_path = "${path.module}/:package_name.zip"
     }
-  provider: >
+  provider: |
     provider "aws" {
       region     = var.aws_region
     }
-  variables: >
+  variables: |
     # variable "bucket" {
-    #  type = string
-    #  default = "lambda-fns-:bucket_name" # should be unique
+    #   type = string
+    #   default = "lambda-fns-:bucket_name" # should be unique
     # }
 
     variable "aws_region" {

@@ -19,7 +19,7 @@ export async function createProjectDir (dirPath) {
 
 export async function initGit (options) {
   const directory =
-    options.targetDir || process.cwd() + `/${options.projectName}`
+    options.targetDir || `${process.cwd()}/${options.projectName}`
   const result = await execa('git', ['init'], {
     cwd: directory
   })
@@ -57,9 +57,8 @@ export function isInProjectRoot () {
 
 export function validateInput (input) {
   if (/^([A-Za-z\-_\d])+$/.test(input)) return true
-  else {
-    return 'Project name may only include letters, numbers, underscores and hashes.'
-  }
+
+  return 'Project name may only include letters, numbers, underscores and hashes.'
 }
 
 export async function copyTemplateFiles (options) {
@@ -70,7 +69,7 @@ export async function copyTemplateFiles (options) {
   )
   return fs.copyFileSync(
     gitIgnore,
-    process.cwd() + '/' + options.projectName + '/.gitignore'
+    `${process.cwd()}/${options.projectName}/.gitignore`
   )
 }
 
@@ -84,7 +83,7 @@ export function createStateMachineJSON (sfnList = []) {
     const sfnName = sfnList[i]
     const task = {
       Type: 'Task',
-      Resource: '${aws_lambda_function.' + camelToUnderscore(sfnName) + '.arn}'
+      Resource: `\${aws_lambda_function.${camelToUnderscore(sfnName)}.arn}`
     }
     const next = i + 1 < sfnList.length ? 'Next' : 'End'
     task[next] = next === 'Next' ? ucFirst(sfnList[i + 1]) : true
@@ -95,17 +94,17 @@ export function createStateMachineJSON (sfnList = []) {
 }
 
 export async function findScript (scriptPath, contents) {
-  const script = await fs.readFileSync(scriptPath, 'utf8')
+  const script = await fs.promises.readFile(scriptPath, 'utf8')
   return script
     ?.trim()
     .includes(contents?.substr(0, contents?.indexOf('{')).trim())
 }
 
 export async function moveTerraScript (scriptPath, text, replace) {
-  let contents = fs.readFileSync(scriptPath, 'utf8')
+  let contents = fs.promises.readFile(scriptPath, 'utf8')
   contents = contents.replace(new RegExp(text, 'g'), replace)
 
-  return fs.writeFileSync(scriptPath, contents)
+  return fs.promises.writeFile(scriptPath, contents)
 }
 
 export async function createTerraformSfn (options, template, config) {
@@ -118,9 +117,9 @@ export async function createTerraformSfn (options, template, config) {
 
     contents = contents.replace(
       /:definition/g,
-      'definition = jsonencode(' +
-        JSON.stringify(createStateMachineJSON(options.sfnList), null, 2) +
-        ')'
+      `definition = jsonencode(${
+        JSON.stringify(createStateMachineJSON(options.sfnList), null, 2)
+        })`
     )
     if (fs.existsSync(scriptPath) && (await findScript(scriptPath, contents))) {
       return
@@ -128,7 +127,7 @@ export async function createTerraformSfn (options, template, config) {
     if (fs.existsSync(scriptPath)) {
       return appendScript(scriptPath, contents)
     }
-    return fs.writeFileSync(scriptPath, contents)
+    return fs.promises.writeFile(scriptPath, contents)
   } catch (err) {
     throw new Error(err.message)
   }
@@ -194,12 +193,12 @@ export async function writeTerraformScript (
       return appendScript(scriptPath, contents)
     }
 
-    return fs.writeFileSync(scriptPath, contents, 'utf8')
+    return fs.promises.writeFile(scriptPath, contents, 'utf8')
   } catch (err) {
     throw new Error(err.message)
   }
 }
 
 async function appendScript (scriptPath, contents) {
-  return fs.appendFileSync(scriptPath, '\n' + contents, 'utf8')
+  return fs.promises.appendFile(scriptPath, `\n${contents}`, 'utf8')
 }

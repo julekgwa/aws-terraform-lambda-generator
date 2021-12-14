@@ -11,22 +11,25 @@ export async function cli (args) {
   let options
   try {
     const config = yaml.load(
-      fs.readFileSync(new URL('../config/default.yml', import.meta.url), {
+      await fs.promises.readFile(new URL('../config/default.yml', import.meta.url), {
         encoding: 'utf-8'
       })
     )
 
     options = parseArgumentsIntoOptions(args)
     options = await promptLambdaOptions(options, config)
+
+    if (options.help) {
+      return
+    }
     await runTasks(options, config)
     console.log('%s Project ready', chalk.green.bold('DONE'))
   } catch (error) {
-    if (options.debug) {
+    if (options && options.debug) {
       console.log('%s %s', chalk.red.bold('ERROR'), error)
     } else {
       console.log('%s %s', chalk.red.bold('ERROR'), error.message)
     }
-    process.exit(1)
   }
   return true
 }

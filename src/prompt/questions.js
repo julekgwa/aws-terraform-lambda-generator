@@ -1,4 +1,3 @@
-import chalk from 'chalk'
 import fs from 'fs'
 import inquirer from 'inquirer'
 import { getDirectories, isInProjectRoot, validateInput } from '../helpers/utils.js'
@@ -29,15 +28,11 @@ export const lambdaQuestion = async (config) => {
 
 export const stateMachineQuestions = async (options) => {
   if (options.sfn && !isInProjectRoot()) {
-    console.log(
-      '%s: You must be in a project directory to create state machine',
-      chalk.red.bold('ERROR')
-    )
-    process.exit(1)
+    throw new Error('You must be in a project directory to create state machine')
   } else if (!options.sfn) {
     return []
   }
-  const sfns = await getDirectories(process.cwd() + '/packages')
+  const sfns = await getDirectories(`${process.cwd()}/packages`)
 
   const choices = []
 

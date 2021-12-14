@@ -17,13 +17,15 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rollup -c --environment INCLUDE_DEPS,BUILD:production"
+    "build": "rollup -c --environment INCLUDE_DEPS,BUILD:production",
+    "lint": "eslint src",
+    "fix": "eslint --fix src"
   },
   "keywords": [
     "cli",
     "create-project"
   ],
-  "author": "YOUR_AUTHOR",
+  "author": "Junius Lekgwara <phutigravel@gmail.com> (http://juniusl.dev)",
   "license": "MIT",
   "dependencies": {
     "arg": "^5.0.1",
