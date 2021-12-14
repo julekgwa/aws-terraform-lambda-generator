@@ -6,8 +6,7 @@
   "files": [
     "dist/*",
     "bin/*",
-    "config/*",
-    "images/*"
+    "config/*"
   ],
   "bin": {
     "create-aws-tf-lambda": "./bin/index.js"

@@ -1,4 +1,4 @@
-[![npm](https://img.shields.io/npm/v/create-aws-tf-lambda.svg)](https://www.npmjs.com/package/create-aws-tf-lambda) [![GitHub stars](https://img.shields.io/github/stars/julekgwa/create-aws-tf-lambda.svg?style=social&label=Stars)](https://github.com/julekgwa/create-aws-tf-lambda) [![gzip size](http://img.badgesize.io/https://unpkg.com/create-aws-tf-lambda/dist/index.js?compression=gzip)](https://unpkg.com/create-aws-tf-lambda/dist/index.js) ![Travis (.org)](https://img.shields.io/travis/julekgwa/create-aws-tf-lambda) ![npm](https://img.shields.io/npm/dw/create-aws-tf-lambda)
+[![npm](https://img.shields.io/npm/v/create-aws-tf-lambda.svg)](https://www.npmjs.com/package/create-aws-tf-lambda) [![GitHub stars](https://img.shields.io/github/stars/julekgwa/create-aws-tf-lambda.svg?style=social&label=Stars)](https://github.com/julekgwa/aws-terraform-lambda-generator) [![gzip size](http://img.badgesize.io/https://unpkg.com/create-aws-tf-lambda/dist/index.js?compression=gzip)](https://unpkg.com/create-aws-tf-lambda/dist/index.js) ![npm](https://img.shields.io/npm/dw/create-aws-tf-lambda)
 
 ![toggle](images/aws-tf.png)
 
