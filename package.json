@@ -1,6 +1,6 @@
 {
   "name": "create-aws-tf-lambda",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Generate AWS lambda with Terraform script",
   "main": "bin/index.js",
   "files": [
