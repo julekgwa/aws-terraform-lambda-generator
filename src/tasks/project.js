@@ -1,13 +1,13 @@
 import { Listr } from 'listr2'
-import { copyTemplateFiles, createProjectDir, initGit } from '../helpers/utils.js'
-import { addScriptToPackageJson, createMonoFile, createPackageJson, installDependencies } from '../project/init.js'
+import { createProjectDir, initGit } from '../helpers/utils.js'
+import { addScriptToPackageJson, createGitIgnore, createMonoFile, createPackageJson, installDependencies } from '../project/init.js'
 
 export const initializeProjectTasks = (task, options, config) => {
   return task.newListr([
     {
       title: 'Creating .gitignore file',
       task: async (t, lambda) => {
-        await copyTemplateFiles(options)
+        await createGitIgnore(options, config)
       }
     },
     {

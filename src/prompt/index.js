@@ -28,7 +28,7 @@ export async function promptLambdaOptions (options, config) {
       answers = await stateMachineQuestions(options)
       break
     default:
-      answers = await lambdaQuestion(config)
+      answers = await lambdaQuestion(config, options)
   }
 
   return {

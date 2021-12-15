@@ -34,7 +34,12 @@
     "create-aws-tf-lambda",
     "aws-lambda",
     "aws-terraform",
-    "nodejs-lambda"
+    "nodejs-lambda",
+    "AWS",
+    "Terraform",
+    "Lambda",
+    "nodejs",
+    "serverless"
   ],
   "author": "Junius Lekgwara <phutigravel@gmail.com> (http://juniusl.dev)",
   "license": "MIT",

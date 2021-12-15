@@ -229,7 +229,7 @@ monoJson: >
     "packages": {}
   }
 
-gitignore: >
+gitignore: |
     # Logs
     logs
     *.log

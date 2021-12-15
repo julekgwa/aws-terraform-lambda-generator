@@ -2,7 +2,7 @@ import fs from 'fs'
 import inquirer from 'inquirer'
 import { getDirectories, isInProjectRoot, validateInput } from '../helpers/utils.js'
 
-export const lambdaQuestion = async (config) => {
+export const lambdaQuestion = async (config, options) => {
   const regionTfScript = `${process.cwd()}/terraform/variables.tf`
   const lambdaRegion = {
     type: 'input',
@@ -17,10 +17,18 @@ export const lambdaQuestion = async (config) => {
     validate: validateInput
   }
 
-  const questions = [lambdaName]
+  const questions = []
+
+  if (!options.lambda) {
+    questions.push(lambdaName)
+  }
 
   if (!fs.existsSync(regionTfScript)) {
     questions.push(lambdaRegion)
+  }
+
+  if (!questions.length) {
+    return options
   }
 
   return inquirer.prompt(questions)
