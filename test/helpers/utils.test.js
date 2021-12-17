@@ -2,6 +2,8 @@ import * as utils from '../../src/helpers/utils.js';
 import fs from 'fs';
 import mock from 'mock-fs';
 
+// console.log(typeof fn['execa'])
+
 describe('Given utils', () => {
   beforeEach(() => {
     mock({
