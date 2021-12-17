@@ -4,6 +4,9 @@
         "node": true,
         "jest": true
     },
+    "plugins": [
+        "import-newlines", "import"
+    ],
     "extends": [
         "standard"
     ],
@@ -13,6 +16,8 @@
     },
     "ignorePatterns": ["**/dist/*.js"],
     "rules": {
+        "import/newline-after-import": ["error"],
+        "import-newlines/enforce": "error",
         // possible errors
         "comma-dangle": [2, "never"],
         "no-cond-assign": [2, "always"],
@@ -138,5 +143,15 @@
         "no-unused-vars": [2],
         "no-use-before-define": [2],
         "prefer-template": "error"
-    }
+    },
+    "overrides": [
+        {
+          "files": [
+            "**/*.test.js",
+          ],
+          "env": {
+            "jest": true
+          }
+        }
+      ]
 }

@@ -1,0 +1,5 @@
+{
+
+  "setupFiles": ["<rootDir>/jestsetup.js"],
+  "transform": {}
+}

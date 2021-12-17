@@ -1,4 +1,4 @@
-const { cli } = require('../src/index')
+import { cli } from '../src/index.js'
 
 describe('Given cli', () => {
   test('should expose the cli function', () => {

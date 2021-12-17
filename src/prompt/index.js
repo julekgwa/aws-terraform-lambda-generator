@@ -1,12 +1,7 @@
 import path from 'path'
-import {
-  lambdaQuestion,
-  newProjectQuestions,
-  organiseLambdas,
-  stateMachineQuestions
-} from './questions.js'
+import { lambdaQuestion, newProjectQuestions, organiseLambdas, stateMachineQuestions } from './questions.js'
 import { isInProjectRoot } from '../helpers/utils.js'
-import chalk from 'chalk'
+import { bold, red } from 'colorette'
 import arg from 'arg'
 
 const DIRECTORY_NAME = path.basename(path.resolve(''))
@@ -77,6 +72,6 @@ export function parseArgumentsIntoOptions (rawArgs) {
       debug: args['--debug']
     }
   } catch (error) {
-    console.log(`%s: ${error.message}`, chalk.red.bold('ERROR'))
+    console.log(`%s: ${error.message}`, bold(red(('ERROR'))))
   }
 }
