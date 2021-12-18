@@ -46,7 +46,7 @@ workflows:
       - build
       - coveralls:
           requires:
-              - build
+              - test
       - test:
           requires:
             - build
