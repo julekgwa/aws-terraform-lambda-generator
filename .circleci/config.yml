@@ -44,7 +44,9 @@ workflows:
   build_and_test:
     jobs:
       - build
-      - coveralls
+      - coveralls:
+          requires:
+              - build
       - test:
           requires:
             - build
