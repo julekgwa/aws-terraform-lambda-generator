@@ -27,7 +27,7 @@
     "build": "rollup -c --environment INCLUDE_DEPS,BUILD:production",
     "lint": "eslint src",
     "fix": "eslint --fix src",
-    "coveralls": "jest --coverage && cat ./coverage/lcov.info | coveralls"
+    "coveralls": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage && cat ./coverage/lcov.info | coveralls"
   },
   "keywords": [
     "cli",
