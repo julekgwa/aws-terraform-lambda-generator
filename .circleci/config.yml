@@ -29,11 +29,24 @@ jobs:
           name: Test
           command: npm test
 
+  coveralls:
+    docker:
+      - image: cimg/node:current
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Coverage
+          command: npm run coveralls
+
 workflows:
   version: 2
   build_and_test:
     jobs:
       - build
+      - coveralls:
+          requires:
+              - test
       - test:
           requires:
             - build
