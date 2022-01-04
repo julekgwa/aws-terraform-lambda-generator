@@ -14,7 +14,7 @@ export async function createPackageJson (options) {
 }
 
 export async function createLambdaPackageJson (options, path, config) {
-  let packageName = `${camelToUnderscore(options.projectName).replace(
+  let packageName = `@${camelToUnderscore(options.projectName).replace(
     '_',
     '-'
   )}/${camelToUnderscore(options.lambda).replace('_', '-')}`
@@ -44,14 +44,12 @@ export async function addScriptToPackageJson (options) {
 
   packageJson.name = camelToUnderscore(packageJson.name).replace('_', '-')
   packageJson.scripts = {
-    test: "mono exec 'npm run test'",
-    build: "mono exec 'npm run build'",
-    clean: "mono exec 'npm run clean'",
-    bootstrap: 'mono bootstrap',
+    test: 'lerna run test',
+    build: 'lerna run build',
+    clean: 'lerna run clean',
     'cicd-init':
-      'npm run bootstrap && npm run build && cd terraform && terraform init',
-    validate: 'npm test && cd terraform && terraform validate',
-    mono: 'mono',
+      'lerna run test && lerna run build && cd terraform && terraform init',
+    validate: 'lerna test && cd terraform && terraform validate',
     lint: "eslint packages/**/*.js --ignore-pattern 'packages/**/dist/**/*.js' --ignore-pattern 'packages/**/test/mock/*.js'"
   }
   fs.promises.writeFile(
@@ -98,26 +96,12 @@ export async function createGitIgnore (options, config) {
   return fs.promises.writeFile(directory, template, 'utf8')
 }
 
-export async function createMonoFile (options, config) {
+export async function createLernaFile (options, config) {
   const directory =
-    `${process.cwd()}/${options.projectName}/mono.json`
-  const template = config.monoJson
+    `${process.cwd()}/${options.projectName}/lerna.json`
+  const template = config.lernaJson
 
   return fs.promises.writeFile(directory, template)
-}
-
-export async function addLambdaToMonoFile (options, path) {
-  const directory = `${path}/mono.json`
-  const packageName = camelToUnderscore(options.projectName).replace('_', '-')
-  const lambda = camelToUnderscore(options.lambda).replace('_', '-')
-  const monoJson = JSON.parse(await fs.promises.readFile(directory))
-
-  monoJson.packages[`@${packageName}/${lambda}`] = {
-    version: '0.0.1',
-    directory: options.lambda
-  }
-
-  return fs.promises.writeFile(directory, JSON.stringify(monoJson, null, 2))
 }
 
 export async function modifyPackageFile (packagePath, projectName, lambda) {
@@ -178,7 +162,7 @@ export async function installDependencies (options) {
   })
   const packages = [
     pkg === 'yarn' ? 'add' : 'install',
-    'monomono'
+    'lerna'
   ]
 
   return execa(pkg, packages, {

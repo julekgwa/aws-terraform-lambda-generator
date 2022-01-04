@@ -2,7 +2,6 @@ import { execa } from 'execa'
 import { Listr } from 'listr2'
 import { createProjectDir, moveTerraScript, writeTerraformScript } from '../helpers/utils.js'
 import {
-  addLambdaToMonoFile,
   createBabelConfig,
   createLambdaFromTemplate,
   createLambdaPackageJson,
@@ -33,8 +32,6 @@ export const createLambdaTasks = (options, config) => {
   let lambdaPath = `${process.cwd()}/${options.lambda}`
   let terraformPath = process.cwd()
 
-  let monoPath = `${process.cwd()}/${options.projectName}`
-
   if (options.new) {
     terraformPath = `${process.cwd()}/${options.projectName}`
     lambdaPath = `${process.cwd()}/${options.projectName}/packages/${
@@ -43,14 +40,15 @@ export const createLambdaTasks = (options, config) => {
   }
 
   if (options.currentProjectDir) {
-    monoPath = process.cwd()
     lambdaPath = `${process.cwd()}/packages/${options.lambda}`
   }
 
   return new Listr([
     {
       title: 'Creating lambda directory',
+      bottomBar: true,
       task: async (p, project) => {
+        project.output = 'I will push an output. [0]'
         if (!options.lambda) {
           project.skip()
         }
@@ -67,17 +65,6 @@ export const createLambdaTasks = (options, config) => {
             title: 'Creating .babelrc file',
             task: async () => {
               await createBabelConfig(lambdaPath, config)
-            }
-          },
-          {
-            title: 'Adding lambda to mono json file',
-            skip: () => {
-              if (!options.currentProjectDir && !options.new) {
-                return 'Not in a mono project'
-              }
-            },
-            task: async () => {
-              await addLambdaToMonoFile(options, monoPath)
             }
           },
           {
@@ -154,7 +141,7 @@ export const moveLambdasIntoOneProject = (lambdas, options, config) => {
         await createProjectDir(`${process.cwd()}/${options.projectName}/packages`)
         await execa('mv', [`${process.cwd()}/terraform`, `${process.cwd()}/${options.projectName}/`])
 
-        const initProjectTasks = initializeProjectTasks(task, options, config)
+        const initProjectTasks = await initializeProjectTasks(task, options, config)
 
         await initProjectTasks.run()
 
@@ -167,7 +154,6 @@ export const moveLambdasIntoOneProject = (lambdas, options, config) => {
 
           await moveTerraScript(`${process.cwd()}/${options.projectName}/terraform/aws_lambda_function.tf`, `../${lambda}`, '../packages/')
           await moveTerraScript(`${process.cwd()}/${options.projectName}/terraform/aws_s3_bucket_object.tf`, `../${lambda}`, '../packages/')
-          await addLambdaToMonoFile({ ...options, lambda }, `${process.cwd()}/${options.projectName}`)
           await modifyPackageFile(`${process.cwd()}/${options.projectName}/packages`, options.projectName, lambda)
         }
       }

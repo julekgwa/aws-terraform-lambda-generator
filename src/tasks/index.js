@@ -1,3 +1,4 @@
+import { bold, green } from 'colorette'
 import { getLambdaDirectories } from '../helpers/utils.js'
 import { createLambdaTasks, moveLambdasIntoOneProject } from './lambda.js'
 import { createProjectTasks } from './project.js'
@@ -5,7 +6,6 @@ import { createStateMachineTasks } from './step-fn.js'
 
 export async function runTasks (options, config) {
   const tasks = []
-
   if (!options.currentProjectDir && options.new && !options.sfn) {
     tasks.push(createProjectTasks(options, config))
   }

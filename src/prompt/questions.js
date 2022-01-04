@@ -1,19 +1,20 @@
 import fs from 'fs'
-import inquirer from 'inquirer'
 import { getDirectories, isInProjectRoot, validateInput } from '../helpers/utils.js'
+import enquirer from 'enquirer'
+import { addLambdaToSfn } from '../sfn/index.js'
 
 export const lambdaQuestion = async (config, options) => {
   const regionTfScript = `${process.cwd()}/terraform/variables.tf`
   const lambdaRegion = {
     type: 'input',
     name: 'region',
-    message: 'What is the region of your lambda?',
-    default: config.aws.region
+    message: 'Lambda region:',
+    initial: config.aws.region
   }
   const lambdaName = {
     type: 'input',
     name: 'name',
-    message: 'What is the name of your lambda?',
+    message: 'Lambda name:',
     validate: validateInput
   }
 
@@ -31,44 +32,49 @@ export const lambdaQuestion = async (config, options) => {
     return options
   }
 
-  return inquirer.prompt(questions)
+  const prompt = new enquirer.Form({
+    name: 'user',
+    message: 'Please provide the following information:',
+    choices: questions
+  })
+
+  return prompt.run(questions)
 }
 
 export const stateMachineQuestions = async (options) => {
   if (options.sfn && !isInProjectRoot()) {
-    throw new Error('You must be in a project directory to create state machine')
+    throw new Error(
+      'You must be in a project directory to create state machine'
+    )
   } else if (!options.sfn) {
     return []
   }
   const sfns = await getDirectories(`${process.cwd()}/packages`)
 
-  const choices = []
-
-  for (const sfn of sfns) {
-    choices.push(sfn)
-    choices.push(new inquirer.Separator(' = Task = '))
+  if (sfns.length) {
+    return {
+      sfn: await addLambdaToSfn(
+        undefined,
+        'Which lambda would you like to add to the state machine?',
+        sfns,
+        sfns
+      )
+    }
   }
-
-  return choices.length
-    ? inquirer.prompt([{
-      type: 'checkbox',
-      name: 'sfn',
-      message: 'Which lambda do you want to add to a state machine?',
-      choices
-    }])
-    : {}
+  return {}
 }
 
 export const organiseLambdas = async () => {
-  return inquirer.prompt([{
-    type: 'input',
-    name: 'project',
-    message: 'What is the name of your project?'
-  }])
+  return {
+    project: await new enquirer.Input({
+      name: 'project',
+      message: 'What is the name of your project?'
+    }).run()
+  }
 }
 
 export const newProjectQuestions = async (config) => {
-  let answers = await inquirer.prompt([
+  let answers = await enquirer.prompt([
     {
       type: 'confirm',
       name: 'addLambda',
@@ -84,7 +90,7 @@ export const newProjectQuestions = async (config) => {
   ])
 
   if (answers.addLambda) {
-    const lambda = await inquirer.prompt([
+    const lambda = await enquirer.prompt([
       {
         type: 'input',
         name: 'name',

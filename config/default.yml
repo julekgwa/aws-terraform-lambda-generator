@@ -221,12 +221,10 @@ terraform:
       type    = string
       default = ":region"
     }
-monoJson: >
+lernaJson: >
   {
-    "packageDir": "packages",
-    "componentDir": "components",
-    "strictMode": true,
-    "packages": {}
+    "packages": ["packages/*"],
+    "version": "0.0.1"
   }
 
 gitignore: |

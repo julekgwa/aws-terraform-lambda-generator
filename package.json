@@ -46,8 +46,8 @@
   "dependencies": {
     "arg": "^5.0.1",
     "colorette": "^2.0.16",
+    "enquirer": "^2.3.6",
     "execa": "^6.0.0",
-    "inquirer": "^8.2.0",
     "js-yaml": "^4.1.0",
     "listr2": "^3.13.5",
     "pkg-install": "^1.0.0",
