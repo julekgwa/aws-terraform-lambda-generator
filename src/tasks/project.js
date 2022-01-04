@@ -1,19 +1,19 @@
 import { Listr } from 'listr2'
 import { createProjectDir, initGit } from '../helpers/utils.js'
-import { addScriptToPackageJson, createGitIgnore, createMonoFile, createPackageJson, installDependencies } from '../project/init.js'
+import { addScriptToPackageJson, createGitIgnore, createLernaFile, createPackageJson, installDependencies } from '../project/init.js'
 
-export const initializeProjectTasks = (task, options, config) => {
+export const initializeProjectTasks = async (task, options, config) => {
   return task.newListr([
     {
       title: 'Creating .gitignore file',
-      task: async (t, lambda) => {
+      task: async () => {
         await createGitIgnore(options, config)
       }
     },
     {
-      title: 'Creating mono json file',
-      task: async (t, lambda) => {
-        await createMonoFile(options, config)
+      title: 'Creating lerna json file',
+      task: async () => {
+        await createLernaFile(options, config)
       }
     },
     {
@@ -57,7 +57,7 @@ export const createProjectTasks = (options, config) => {
               }
               await createProjectDir(`${process.cwd()}/${options.projectName}`)
 
-              const projectTasks = initializeProjectTasks(project, options, config)
+              const projectTasks = await initializeProjectTasks(project, options, config)
 
               await projectTasks.run()
             }
