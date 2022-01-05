@@ -140,161 +140,20 @@ function getQuestions (stepFn, stateType) {
   return choices.slice(start, removeQ)
 }
 
-async function addStatesWithRetriers (lambdas, stepFn, stateType, nextStates, isMap) {
-  const branches = {}
-  const choices = [
-    invisibleInput('name', 'Step function name', stepFn),
-    invisibleInput('stateType', 'Lambda state type', stateType),
-    input('Comment', 'Comment (Optional)', ''),
-    input('InputPath', 'InputPath (Optional)', ''),
-    input('OutputPath', 'OutputPath (Optional)', ''),
-    input('ResultPath', 'ResultPath (Optional)', ''),
-    input('Parameters', 'Parameters (Optional)', ''),
-    input('ResultSelector', 'ResultSelector (Optional)', ''),
-    confirm('Retry', 'Do you want to add a retrier?', false, 'Retry'),
-    confirm('Catch', 'Do you want to add a catcher?', false, 'Catch')
-  ]
-
-  if (!isMap) {
-    choices.push(input('next', 'What is your next state lambda?', '', '', validateInput, (res) => res, true))
-  }
-
-  const form = await new enquirer.Form({
-    name: 'task',
-    message: 'Please review your answers:',
-    choices
-  }).run()
-
-  if (form.Retry === 'true') {
-    form.Retry = await addErrorHandler('Retry', false)
-  }
-
-  if (form.Catch === 'true') {
-    form.Catch = await addErrorHandler('Catch', false)
-  }
-
-  if (stateType === STATE_TYPES.parallel || stateType === STATE_TYPES.map) {
-    const message =
-      stateType === STATE_TYPES.parallel
-        ? 'Add lambda to Parallel branch'
-        : 'Add lambda to Map Iterator'
-    const type = STATE_TYPES.parallel === stateType ? 'Branches' : 'Iterator'
-
-    branches[type] = await addLambdaToSfn(
-      undefined,
-      underline(green(message)),
-      lambdas,
-      nextStates,
-      STATE_TYPES.map === stateType
-    )
-
-    if (STATE_TYPES.parallel === stateType) {
-      branches[type] = branches[type].map((item) =>
-        createStateMachineJSON([item])
-      )
-    } else {
-      branches[type] = createStateMachineJSON(branches[type])
-    }
-  }
-
-  return { ...form, ...branches }
-}
-
 async function addStates (lambdas, stepFn, stateType, nextStates, isMap) {
   let choice
   const branches = {}
-  // let form
-  // const choices = [
-  //   invisibleInput('name', 'Step function name', stepFn),
-  //   invisibleInput('stateType', 'Lambda state type', stateType)
-  // ]
-
-  // switch (true) {
-  //   case [STATE_TYPES.task, STATE_TYPES.parallel, STATE_TYPES.map].includes(
-  //     stateType
-  //   ):
-  //     form = await addStatesWithRetriers(lambdas, stepFn, stateType, nextStates, isMap)
-  //     break
-  //   case ![STATE_TYPES.succeed, STATE_TYPES.fail].includes(stateType):
-  //     choices.push(
-  //       input('Comment', 'Comment (Optional)', ''),
-  //       input('InputPath', 'InputPath (Optional)', ''),
-  //       input('OutputPath', 'OutputPath (Optional)', '')
-  //     )
-  //     break
-  //   case stateType === STATE_TYPES.choice:
-  //     choices.push(
-  //       select(
-  //         'default',
-  //         'Select default state (Optional, Recommended)',
-  //         nextStates.filter((lamb) => lamb !== stepFn)
-  //       )
-  //     )
-  //     break
-  //   case ![
-  //     STATE_TYPES.wait,
-  //     STATE_TYPES.choice,
-  //     STATE_TYPES.succeed,
-  //     STATE_TYPES.fail
-  //   ].includes(stateType):
-  //     choices.push(
-  //       input('ResultPath', 'ResultPath (Optional)', ''),
-  //       input('Parameters', 'Parameters (Optional)', '')
-  //     )
-  //     break
-  //   case stateType === STATE_TYPES.wait:
-  //     choices.push(
-  //       select('wait', 'Select wait field', [
-  //         'Seconds',
-  //         'Timestamp',
-  //         'SecondsPath',
-  //         'TimestampPath'
-  //       ]),
-  //       input(
-  //         'waitTime',
-  //         'Enter wait time',
-  //         '',
-  //         'e.g 2016-08-18T17:33:00Z for Timestamp',
-  //         () => true,
-  //         (res) => res,
-  //         true
-  //       )
-  //     )
-  //     break
-  //   case stateType === STATE_TYPES.pass:
-  //     choices.push(input('Result', 'Result (Optional)', ''))
-  //     break
-  //   case ![STATE_TYPES.choice, STATE_TYPES.succeed, STATE_TYPES.fail].includes(
-  //     stateType
-  //   ):
-  //     choices.push(
-  //       select('next', 'What is your next state lambda?', [
-  //         ...nextStates.filter((lamb) => lamb !== stepFn),
-  //         'End'
-  //       ])
-  //     )
-  //     break
-  //   default:
-  //     choices.push(
-  //       input('Cause', 'Cause (Optional)', ''),
-  //       input('Error', 'Error (Optional)', '')
-  //     )
-  // }
   const choices = getQuestions(stepFn, stateType)
 
   if (!isMap && ![STATE_TYPES.choice, STATE_TYPES.succeed, STATE_TYPES.fail].includes(stateType)) {
     choices.push(input('next', 'What is your next state lambda?', '', '', validateInput, (res) => res, true))
   }
-  // if (![STATE_TYPES.task, STATE_TYPES.parallel, STATE_TYPES.map].includes(
-  //   stateType
-  // )) {
 
   const form = await new enquirer.Form({
     name: 'task',
     message: 'Please review your answers:',
     choices
   }).run()
-  // }
 
   if (stateType === STATE_TYPES.choice) {
     choice = await addChoice(nextStates)

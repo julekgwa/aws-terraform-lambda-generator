@@ -123,6 +123,9 @@ function createStateType (sfnName) {
 }
 
 export function createStateMachineJSON (sfnList) {
+  if (!sfnList.length) {
+    return sfnList
+  }
   const stateMachineJSON = {
     StartAt: ucFirst(sfnList[0].name),
     States: {}

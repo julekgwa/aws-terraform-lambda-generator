@@ -17,6 +17,6 @@ export default [
       resolve(),
       terser()
     ],
-    external: ['execa', 'arg', 'pkg-install', 'listr2']
+    external: ['execa', 'arg', 'pkg-install', 'listr2', 'enquirer']
   }
 ]
