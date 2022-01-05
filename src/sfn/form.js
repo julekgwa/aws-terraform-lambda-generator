@@ -1,21 +1,24 @@
-import enquirer from 'enquirer';
+import enquirer from 'enquirer'
+import { addErrorHandler } from './index.js'
+
 export const invisibleInput = (name, message, initial) => {
   return async () => {
-    let p = new enquirer.Invisible({
+    const p = new enquirer.Invisible({
       name,
       message,
       skip: true,
       value: initial,
-      enabled: false,
-    });
-    const value = await p.run();
-    return { name, message, initial: value, value };
-  };
-};
+      enabled: false
+    })
+    const value = await p.run()
+
+    return { name, message, initial: value, value }
+  }
+}
 
 export const input = (name, message, initial, hint, validate, result, required = false) => {
   return async () => {
-    let p = new enquirer.Input({
+    const p = new enquirer.Input({
       name,
       message,
       initial,
@@ -23,35 +26,37 @@ export const input = (name, message, initial, hint, validate, result, required =
       validate,
       result,
       required
-    });
-    const value = await p.run();
-    return { name, message, initial: value, value };
-  };
-};
+    })
+    const value = await p.run()
+
+    return { name, message, initial: value, value }
+  }
+}
 
 export const select = (name, message, choices) => {
   return async () => {
     const s = new enquirer.Select({
       name,
       message,
-      choices,
-    });
+      choices
+    })
 
-    const value = await s.run();
+    const value = await s.run()
 
-    return { name, initial: value };
-  };
-};
+    return { name, initial: value }
+  }
+}
 
 export const confirm = (name, message, initial, type) => {
   return async () => {
-    let p = new enquirer.Confirm({ name, message, initial });
-    const value = await p.run();
+    const p = new enquirer.Confirm({ name, message, initial })
+    const value = await p.run()
 
     if (value && type) {
-      const s = await addErrorHandler(type, initial);
-      return { name, message, initial: s, value };
+      const s = await addErrorHandler(type, initial)
+
+      return { name, message, initial: s, value }
     }
-    return { name, message, initial: value.toString(), value };
-  };
-};
+    return { name, message, initial: value.toString(), value }
+  }
+}

@@ -106,7 +106,7 @@ describe('Given utils', () => {
     describe('and input value is invalid', () => {
       it('should return validation message', () => {
         expect(utils.validateInput(' ')).toBe(
-          'Project name may only include letters, numbers, underscores and hashes.'
+          'Name may only include letters, numbers, underscores and hashes.'
         )
       })
     })

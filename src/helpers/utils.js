@@ -26,9 +26,9 @@ function lcFirst (string) {
   return string.charAt(0).toLowerCase() + string.slice(1)
 }
 
-function clean (obj) {
+export function clean (obj) {
   for (const propName in obj) {
-    if (obj[propName] === '' || obj[propName] === undefined) {
+    if (obj[propName] === '' || obj[propName] === 'optional' || obj[propName] === undefined) {
       delete obj[propName]
     }
   }
@@ -86,18 +86,12 @@ export function isInProjectRoot () {
 export function validateInput (input) {
   if (/^([A-Za-z\-_\d])+$/.test(input)) return true
 
-  return 'Project name may only include letters, numbers, underscores and hashes.'
+  return 'Name may only include letters, numbers, underscores and hashes.'
 }
 
 function createStateType (sfnName) {
   const state = {
     Type: sfnName.stateType
-  }
-
-  if (sfnName.stateType === 'Task') {
-    state.Resource = `\${aws_lambda_function.${camelToUnderscore(
-      sfnName.name
-    )}.arn}`
   }
 
   for (const key in sfnName) {
@@ -121,10 +115,7 @@ function createStateType (sfnName) {
   const next =
     sfnName.next !== 'End' && sfnName.next !== 'Done' ? 'Next' : 'End'
 
-  if (sfnName.stateType === 'Choice' && sfnName.default) {
-    state.Default = ucFirst(sfnName.default)
-    delete state.default
-  } else if (!['Succeed', 'Fail'].includes(sfnName.stateType)) {
+  if (!['Succeed', 'Fail'].includes(sfnName.stateType) && sfnName.next) {
     state[next] = next === 'Next' ? ucFirst(sfnName.next) : true
   }
 
@@ -139,6 +130,17 @@ export function createStateMachineJSON (sfnList) {
 
   for (const sfn of sfnList) {
     const sfnName = clean(sfn)
+
+    if (sfnName.stateType === 'Task') {
+      sfnName.Resource = `\${aws_lambda_function.${camelToUnderscore(
+        sfnName.name
+      )}.arn}`
+    }
+
+    if (sfnName.stateType === 'Choice' && sfnName.default) {
+      sfnName.Default = ucFirst(sfnName.default)
+      delete sfnName.default
+    }
 
     stateMachineJSON.States[ucFirst(sfnName.name)] = createStateType(sfnName)
   }
