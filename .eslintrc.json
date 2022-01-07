@@ -1,20 +1,20 @@
 {
     "env": {
-        "es2021": true,
         "node": true,
-        "jest": true
+        "jest": true,
+        "es2021": true
     },
-    "plugins": [
-        "import-newlines", "import"
-    ],
     "extends": [
-        "standard"
+        "google"
     ],
+    "parser": "@typescript-eslint/parser",
     "parserOptions": {
         "ecmaVersion": 12,
         "sourceType": "module"
     },
-    "ignorePatterns": ["**/dist/*.js"],
+    "plugins": [
+        "@typescript-eslint", "import-newlines", "import"
+    ],
     "rules": {
         "import/newline-after-import": ["error"],
         "import-newlines/enforce": "error",
@@ -143,15 +143,5 @@
         "no-unused-vars": [2],
         "no-use-before-define": [2],
         "prefer-template": "error"
-    },
-    "overrides": [
-        {
-          "files": [
-            "**/*.test.js"
-          ],
-          "env": {
-            "jest": true
-          }
-        }
-      ]
+    }
 }

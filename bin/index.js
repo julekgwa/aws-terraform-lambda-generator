@@ -1,5 +1,4 @@
-#!/usr/bin/env node
-
-import { cli } from '../dist/index.js'
+#!/usr/bin/env node --experimental-specifier-resolution=node
+import {cli} from '../dist/index'
 
 cli(process.argv)

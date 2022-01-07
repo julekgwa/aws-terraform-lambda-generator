@@ -1,6 +1,6 @@
 {
 
   "setupFiles": ["<rootDir>/jestsetup.js"],
-  "transform": {},
-  "testEnvironment": "jest-environment-node"
+  "preset": "ts-jest",
+  "testEnvironment": "node"
 }
