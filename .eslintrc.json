@@ -16,8 +16,11 @@
         "@typescript-eslint", "import-newlines", "import"
     ],
     "rules": {
+        "@typescript-eslint/no-shadow": ["error"],
+        "@typescript-eslint/no-unused-vars": ["error"],
         "import/newline-after-import": ["error"],
-        "import-newlines/enforce": "error",
+        // "import-newlines/enforce": "error",
+        "require-jsdoc": "off",
         // possible errors
         "comma-dangle": [2, "never"],
         "no-cond-assign": [2, "always"],
@@ -42,7 +45,7 @@
         "no-regex-spaces": [2],
         "no-sparse-arrays": [2],
         "no-unexpected-multiline": [2],
-        "newline-after-var":"error",
+        "newline-after-var": "error",
         "no-unreachable": [2],
         "use-isnan": [2],
         "valid-jsdoc": [2, {
@@ -135,12 +138,11 @@
         "no-catch-shadow": [2],
         "no-delete-var": [2],
         "no-label-var": [2],
-        "no-shadow": [2],
+        "no-shadow": "off",
         "no-shadow-restricted-names": [2],
         "no-undef": [2],
         "no-undef-init": [2],
-        "no-undefined": [2],
-        "no-unused-vars": [2],
+        "no-unused-vars": "off",
         "no-use-before-define": [2],
         "prefer-template": "error"
     }
