@@ -107,6 +107,23 @@ describe('Given utils', () => {
     });
   });
 
+  describe('and initGit is called', () => {
+    it('should initialize git repository', async () => {
+      const dir = await utils.initGit({
+        path: 'lab',
+        lambda: 'lab',
+        projectName: '',
+        region: 'af',
+        sfnList: [
+          {name: 'test', next: 'Next'},
+          {name: 'failed', next: 'Next'}
+        ]
+      });
+
+      expect(dir).toBe(undefined);
+    });
+  });
+
   describe('and getLambdaDirectories is called', () => {
     it('should list all dirs', async () => {
       const dir = await utils.getLambdaDirectories('test');
@@ -135,7 +152,7 @@ describe('Given utils', () => {
     it('should return json object', () => {
       const json = utils.createStateMachineJSON([
         {name: 'lab', next: 'Next', test: 'Yes', Retry: '{"test": "yes"}'},
-        {name: test, next: 'Next', key: 'optional', Catch: '{"test": "yes"}'}
+        {name: 'test', next: 'Next', key: 'optional', Catch: '{"test": "yes"}'}
       ]);
 
       expect(json.StartAt).toEqual('Lab');

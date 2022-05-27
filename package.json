@@ -8,7 +8,7 @@
     "bin/*"
   ],
   "bin": {
-    "create-aws-tf-lambda": "./bin/index.js"
+    "create-aws-tf-lambda": "bin/index.js"
   },
   "type": "module",
   "publishConfig": {
@@ -27,7 +27,8 @@
     "build": "rimraf dist && tsc && rollup -c --environment INCLUDE_DEPS,BUILD:production",
     "lint": "eslint src",
     "fix": "eslint --fix src",
-    "coveralls": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage && cat ./coverage/lcov.info | coveralls"
+    "coveralls": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage && cat ./coverage/lcov.info | coveralls",
+    "dev": "tsc --watch"
   },
   "keywords": [
     "cli",
@@ -44,13 +45,15 @@
   "author": "Junius Lekgwara <phutigravel@gmail.com> (http://juniusl.dev)",
   "license": "MIT",
   "dependencies": {
+    "@babel/runtime-corejs3": "^7.16.8",
     "arg": "^5.0.1",
+    "aws-sdk": "^2.1058.0",
     "colorette": "^2.0.16",
     "enquirer": "^2.3.6",
     "execa": "^6.0.0",
+    "get-package-manager": "^1.0.2",
     "js-yaml": "^4.1.0",
     "listr2": "^3.13.5",
-    "pkg-install": "^1.0.0",
     "unique-names-generator": "^4.6.0"
   },
   "devDependencies": {
@@ -70,6 +73,7 @@
     "eslint-plugin-promise": "^5.2.0",
     "jest": "^27.4.5",
     "mock-fs": "^5.1.2",
+    "prettier": "^2.5.1",
     "rimraf": "^3.0.2",
     "rollup": "^2.61.1",
     "rollup-plugin-peer-deps-external": "^2.2.4",
@@ -77,5 +81,8 @@
     "standard": "^16.0.4",
     "ts-jest": "^27.1.2",
     "typescript": "^4.5.4"
+  },
+  "directories": {
+    "test": "test"
   }
 }

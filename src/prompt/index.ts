@@ -1,0 +1,78 @@
+import path from 'path'
+import { lambdaQuestion, newProjectQuestions, organiseLambdas, stateMachineQuestions } from './questions.js'
+import { isInProjectRoot } from '../helpers/utils.js'
+import { bold, red } from 'colorette'
+import arg from 'arg'
+import { Config, Options } from '../types/types.js'
+
+const DIRECTORY_NAME = path.basename(path.resolve(''))
+
+export async function promptLambdaOptions (options: any, config: Config) : Promise<Options> {
+  let answers
+
+  switch (true) {
+    case options.help !== undefined:
+      console.log(config.help)
+      break
+    case options.new && !isInProjectRoot() && !options.sfn:
+      answers = await newProjectQuestions(config)
+      break
+    case options.org !== undefined:
+      answers = await organiseLambdas()
+      break
+    case options.sfn:
+      answers = await stateMachineQuestions(options)
+      break
+    default:
+      answers = await lambdaQuestion(config, options)
+  }
+
+  return {
+    ...options,
+    lambda: options.lambda || answers?.name,
+    projectName: options.projectName || answers?.project || DIRECTORY_NAME,
+    region: options.region || answers?.region || config.aws.region,
+    currentProjectDir: !!isInProjectRoot(),
+    sfnList: answers?.sfn || []
+  }
+}
+
+export function parseArgumentsIntoOptions (rawArgs: any[])  {
+  try {
+    const args = arg(
+      {
+        '--add': String,
+        '--remove': String,
+        '--dir': String,
+        '--new': String,
+        '--help': Boolean,
+        '--org': Boolean,
+        '--debug': Boolean,
+        '-a': '--add',
+        '-r': '--remove',
+        '-d': '--dir',
+        '-n': '--new',
+        '-h': '--help',
+        '-o': '--org'
+      },
+      {
+        argv: rawArgs.slice(2)
+      }
+    )
+
+    return {
+      lambda: args['--add'],
+      remove: args['--remove'],
+      projectName: args['--new'],
+      skipPrompts: !!args['--add'],
+      targetDir: args['--dir'],
+      sfn: args['--add']?.toLowerCase() === 'sfn',
+      new: args['--new'],
+      help: args['--help'],
+      org: args['--org'],
+      debug: args['--debug']
+    }
+  } catch (error: any) {
+    console.log(`%s: ${error.message}`, bold(red(('ERROR'))))
+  }
+}

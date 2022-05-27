@@ -1,7 +1,7 @@
-import resolve from '@rollup/plugin-node-resolve'
+import resolve from '@rollup/plugin-node-resolve';
 
-import external from 'rollup-plugin-peer-deps-external'
-import { terser } from 'rollup-plugin-terser'
+import external from 'rollup-plugin-peer-deps-external';
+import {terser} from 'rollup-plugin-terser';
 
 export default [
   {
@@ -17,6 +17,6 @@ export default [
       resolve(),
       terser()
     ],
-    external: ['execa', 'arg', 'pkg-install', 'listr2', 'enquirer']
+    external: ['execa', 'arg', 'listr2', 'enquirer', 'shelljs']
   }
-]
+];

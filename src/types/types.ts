@@ -3,20 +3,34 @@ export interface LooseObject {
   [key: string]: any
 }
 
+export interface Retrier {
+  ErrorEquals: string[],
+  IntervalSeconds: number,
+  MaxAttempts: number,
+  BackoffRate: number
+}
+
+export interface Catcher {
+  ErrorEquals: string[],
+  Next: string,
+  ResultPath: string
+}
+
 export interface Options {
   lambda: string,
   remove?: string,
-  projectName: string,
+  projectName: string | undefined,
   sfn?: boolean,
   new?: string,
-  help?: string,
-  org?: string,
-  debug?: string,
+  help?: string | boolean,
+  org?: string | boolean,
+  debug?: string | boolean,
   sfnList: LooseObject[],
   region: string,
   targetDir?: string,
   currentProjectDir?: boolean,
-  path?: string
+  path?: string,
+  skipPrompts?: boolean
 }
 
 export enum Numbers {
